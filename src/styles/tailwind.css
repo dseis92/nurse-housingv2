@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg: 255 255 255;
+    --fg: 24 24 27;         /* zinc-900 */
+    --muted: 113 113 122;   /* zinc-500 */
+    --accent: 236 72 153;   /* pink-500 */
+    --accent-2: 13 148 136; /* teal-600 */
+  }
+  html, body { background: rgb(var(--bg)); color: rgb(var(--fg)); }
+}
+@layer utilities {
+  .container-constraint { max-width: 1200px; margin-inline: auto; padding-inline: 1rem; }
+  .shadow-card { box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+}

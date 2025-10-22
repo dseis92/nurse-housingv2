@@ -1,0 +1,9 @@
+# deps & builds
+node_modules
+dist
+.vite
+# env / os
+.env*
+.DS_Store
+# generated css (built by tailwind cli)
+src/styles/tailwind-output.css

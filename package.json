@@ -1,0 +1,28 @@
+{
+  "name": "nurse-housingv2",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k \"tailwindcss -i src/styles/tailwind.css -o src/styles/tailwind-output.css --watch\" \"vite\"",
+    "build:css": "tailwindcss -i src/styles/tailwind.css -o src/styles/tailwind-output.css --minify",
+    "build": "npm run build:css && vite build",
+    "preview": "vite preview --port 5174"
+  },
+  "dependencies": {
+    "lucide-react": "^0.460.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^4.5.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.0.0",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "concurrently": "^9.0.1",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  }
+}
