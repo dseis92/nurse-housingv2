@@ -3,18 +3,19 @@ import type { Listing } from '../../types'
 import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
 import { useFavStore } from '../../stores/favorites'
+import { useUIStore } from '../../stores/ui'
 import { cn } from '../../lib/utils'
 
 export default function ListingCard({ l, score }: { l: Listing; score: number }) {
   const toggle = useFavStore(s=>s.toggle); const isFav = useFavStore(s=>s.isFav)(l.id)
+  const open = useUIStore(s=>s.open)
+
   return (
     <div className="overflow-hidden rounded-2xl bg-zinc-50 shadow-card">
       <div className="relative">
         <img src={l.photos[0]} alt={l.title} className="h-56 w-full object-cover"/>
         <div className="absolute left-3 top-3 flex gap-2">
-          <Badge className={cn(score>=80?'bg-teal-600 text-white border-transparent':score>=60?'bg-pink-500 text-white border-transparent':'bg-white text-zinc-800')}>
-            Match {score}%
-          </Badge>
+          <Badge className={cn(score>=80?'bg-teal-600 text-white border-transparent':score>=60?'bg-pink-500 text-white border-transparent':'bg-white text-zinc-800')}>Match {score}%</Badge>
           {l.features.instantBook && <Badge className="bg-pink-500 text-white border-transparent">Instant Book</Badge>}
         </div>
         <button onClick={()=>toggle(l.id)} className="absolute right-3 top-3 rounded-full bg-white/90 p-2 hover:bg-white">
@@ -44,7 +45,7 @@ export default function ListingCard({ l, score }: { l: Listing; score: number })
             {l.features.pet.allowed && <Badge>Pet friendly</Badge>}
             {l.features.parking.largeVehicle && <Badge>Large vehicle OK</Badge>}
           </div>
-          <Button>View & Book</Button>
+          <Button onClick={()=>open(l.id)}>View & Book</Button>
         </div>
       </div>
     </div>

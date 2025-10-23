@@ -1,17 +1,22 @@
 import TopBar from '../../components/TopBar'
 import FilterBar from '../../components/FilterBar'
 import ListingCard from '../../components/listing/ListingCard'
+import Modal from '../../components/ui/Modal'
+import ListingDetails from '../../components/listing/ListingDetails'
 import { LISTINGS } from '../../lib/data/listings'
 import { useFilterStore } from '../../stores/filters'
 import { computeMatch } from '../../lib/match'
 import { useEffect, useState } from 'react'
+import { useUIStore } from '../../stores/ui'
 
 export default function HomePage(){
   const filters = useFilterStore(s=>s.filters)
   const [loading,setLoading]=useState(true)
   const [data]=useState(LISTINGS)
+  const selectedId = useUIStore(s=>s.selectedId)
+  const close = useUIStore(s=>s.close)
 
-  useEffect(()=>{ const t=setTimeout(()=>setLoading(false),500); return ()=>clearTimeout(t) },[])
+  useEffect(()=>{ const t=setTimeout(()=>setLoading(false),500); return ()=>clearTimeout(t)},[])
 
   const results = data
     .filter(l=>{
@@ -53,6 +58,11 @@ export default function HomePage(){
           </div>
         )}
       </section>
+
+      <Modal open={!!selectedId} onClose={close} title="Home Details">
+        {selectedId ? <ListingDetails id={selectedId}/> : null}
+      </Modal>
+
       <footer className="mt-12 border-t border-zinc-200 py-8 text-center text-sm text-zinc-500">
         Built for traveling nurses. Transparent. Quiet-friendly. All-in weekly prices.
       </footer>
