@@ -7,7 +7,9 @@
     "dev": "vite",
     "build:css": "tailwindcss -i src/styles/tailwind.css -o src/styles/tailwind-output.css --minify",
     "build": "vite build",
-    "preview": "vite preview --port 5174"
+    "preview": "vite preview --port 5174",
+    "db:link": "supabase link --project-ref $SUPABASE_PROJECT_REF",
+    "db:push": "supabase db push"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.76.1",
