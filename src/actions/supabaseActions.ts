@@ -1,4 +1,4 @@
-import { supabase, hasSupabaseEnv } from '../lib/supabaseClient'
+import { ensureSupabase } from '../lib/supabaseClient'
 
 export type Listing = {
   id: string
@@ -11,49 +11,44 @@ export type Listing = {
 }
 
 export async function syncFromSupabase(userId?: string) {
-  if (!hasSupabaseEnv) return { listings: [], matches: [], contracts: [] }
+  const sb = await ensureSupabase()
+  if (!sb) return { listings: [], matches: [], contracts: [] }
 
-  // listings feed (use view or RPC if available)
   let listings: Listing[] = []
-  // prefer RPC get_feed if present
   try {
-    const { data, error } = await supabase.rpc('get_feed', { p_user_id: userId ?? null })
+    const { data, error } = await sb.rpc('get_feed', { p_user_id: userId ?? null })
     if (!error && Array.isArray(data)) listings = data as Listing[]
-  } catch { /* ignore */ }
+  } catch { /* noop */ }
+
   if (listings.length === 0) {
-    const { data } = await supabase.from('listings_view').select('*').limit(50)
+    const { data } = await sb.from('listings_view').select('*').limit(50)
     listings = (data as any[] ?? []) as Listing[]
   }
 
-  // matches
-  const { data: matches = [] } = await supabase.from('matches_view').select('*').limit(50)
-  // contracts (latest for user)
+  const { data: matches = [] } = await sb.from('matches_view').select('*').limit(50)
   const { data: contracts = [] } = userId
-    ? await supabase.from('contracts').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1)
+    ? await sb.from('contracts').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1)
     : { data: [] as any[] }
 
   return { listings, matches, contracts }
 }
 
 export async function likeListing(listingId: string) {
-  if (!hasSupabaseEnv) return { match_id: null }
-  // prefer RPC user_like_listing (creates like + returns match if mutual)
+  const sb = await ensureSupabase()
+  if (!sb) return { match_id: null }
   try {
-    const { data, error } = await supabase.rpc('user_like_listing', { p_listing_id: listingId })
+    const { data, error } = await sb.rpc('user_like_listing', { p_listing_id: listingId })
     if (!error) return data ?? { match_id: null }
-  } catch { /* fall through */ }
-
-  // fallback: insert into likes then attempt ensure_match_on_mutual_like
-  await supabase.from('likes').insert({ listing_id: listingId, direction: 'like' })
-  const { data } = await supabase.rpc('ensure_match_on_mutual_like', { p_listing_id: listingId })
+  } catch { /* noop */ }
+  await sb.from('likes').insert({ listing_id: listingId, direction: 'like' })
+  const { data } = await sb.rpc('ensure_match_on_mutual_like', { p_listing_id: listingId })
   return data ?? { match_id: null }
 }
 
 export async function passListing(listingId: string) {
-  if (!hasSupabaseEnv) return
-  try {
-    await supabase.from('likes').insert({ listing_id: listingId, direction: 'pass' })
-  } catch {/* ignore */}
+  const sb = await ensureSupabase()
+  if (!sb) return
+  try { await sb.from('likes').insert({ listing_id: listingId, direction: 'pass' }) } catch {}
 }
 
 export async function createListing(input: {
@@ -66,15 +61,13 @@ export async function createListing(input: {
   thumb_url?: string | null
   video_url?: string | null
 }) {
-  if (!hasSupabaseEnv) return { id: null }
-
-  // prefer RPC create_listing
+  const sb = await ensureSupabase()
+  if (!sb) return { id: null }
   try {
-    const { data, error } = await supabase.rpc('create_listing', { p_input: input })
+    const { data, error } = await sb.rpc('create_listing', { p_input: input })
     if (!error && data?.id) return data
-  } catch { /* ignore */ }
-
-  const { data, error } = await supabase.from('listings').insert(input).select('id').single()
+  } catch {}
+  const { data, error } = await sb.from('listings').insert(input).select('id').single()
   if (error) throw error
   return data
 }
