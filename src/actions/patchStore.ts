@@ -1,8 +1,7 @@
-import { hasSupabaseEnv } from '../lib/supabaseClient'
 import { likeListing as rpcLike, passListing as rpcPass, createListing as rpcCreate } from './supabaseActions'
 
 export async function patchStoreWithSupabase() {
-  if (!hasSupabaseEnv) return
+  // dynamic import avoids circular deps during boot
   const mod = await import('../stores/useAppStore')
   const useAppStore = (mod as any).useAppStore
   if (!useAppStore?.getState) return
