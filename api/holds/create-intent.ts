@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 2) create Stripe intent (optional in dev)
     let client_secret: string | undefined
     if (stripeKey) {
-      const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' })
+      const stripe = new Stripe(stripeKey)
       const intent = await stripe.paymentIntents.create({
         amount: amountCents,
         currency: 'usd',

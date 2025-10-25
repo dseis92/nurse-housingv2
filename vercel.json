@@ -5,6 +5,6 @@
     { "src": "/.*", "dest": "/index.html" }
   ],
   "crons": [
-    { "path": "/api/holds/expire", "schedule": "0 * * * *" }
+    { "path": "/api/holds/expire", "schedule": "0 3 * * *" }
   ]
 }
