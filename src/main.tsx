@@ -1,30 +1,28 @@
 import { StrictMode, useEffect } from 'react'
-import './actions/patchStoreBoot'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
 import App from './App'
 
-// pages (adapt names if yours differ)
 import LoginPage from './pages/auth/LoginPage'
 import SwipePage from './pages/SwipePage'
-import ShortlistPage from './pages/ShortlistPage'
+import NotFound from './pages/system/NotFound'
+import ErrorPage from './pages/system/ErrorPage'
 import AdminPage from './pages/admin/AdminPage'
 import OwnerListingForm from './pages/owner/OwnerListingForm'
 import ChatPage from './pages/chat/ChatPage'
+import Shortlist from './pages/shortlist/Shortlist'  // use the soft-hold version
 
-// auth gates
 import RequireAuth from './components/auth/RequireAuth'
 import RequireRole from './components/auth/RequireRole'
 
-// optional: hook a feed sync on the swipe page wrapper
 import { syncFromSupabase } from './actions/supabaseActions'
 import { useSession } from './stores/session'
+import './actions/patchStoreBoot'
 
 function SwipeWithSync() {
   const { session } = useSession()
   useEffect(() => {
-    // fire-and-forget sync; pages can also call their own sync if needed
     syncFromSupabase(session?.user?.id).catch(() => {})
   }, [session?.user?.id])
   return <SwipePage />
@@ -34,12 +32,12 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <App />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <SwipeWithSync /> },
-      { path: 'shortlist', element: <RequireAuth><ShortlistPage /></RequireAuth> },
+      { path: 'shortlist', element: <RequireAuth><Shortlist /></RequireAuth> },
       { path: 'chat/:matchId', element: <RequireAuth><ChatPage /></RequireAuth> },
 
-      // OWNER routes (owner or admin)
       {
         path: 'owner/listing/new',
         element: (
@@ -48,8 +46,6 @@ const router = createBrowserRouter([
           </RequireRole>
         )
       },
-
-      // ADMIN routes (admin only)
       {
         path: 'admin',
         element: (
@@ -58,9 +54,14 @@ const router = createBrowserRouter([
           </RequireRole>
         )
       },
-    ]
+
+      // catch-all for unknown child routes
+      { path: '*', element: <NotFound /> },
+    ],
   },
-  { path: '/login', element: <LoginPage /> },
+  { path: '/login', element: <LoginPage />, errorElement: <ErrorPage /> },
+  // global catch-all (in case something escapes)
+  { path: '*', element: <NotFound /> }
 ])
 
 createRoot(document.getElementById('root')!).render(
