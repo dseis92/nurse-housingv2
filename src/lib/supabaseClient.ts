@@ -1,12 +1,32 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-const url  = import.meta.env.VITE_SUPABASE_URL as string | undefined
-const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
+let url  = (import.meta as any)?.env?.VITE_SUPABASE_URL as string | undefined
+let anon = (import.meta as any)?.env?.VITE_SUPABASE_ANON_KEY as string | undefined
 
-export const hasSupabaseEnv = Boolean(url && anon)
+export let hasSupabaseEnv = Boolean(url && anon)
+export let supabase: SupabaseClient | null = hasSupabaseEnv
+  ? createClient(url!, anon!, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
+  : null
 
-export const supabase = hasSupabaseEnv
-  ? createClient(url!, anon!, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-    })
-  : (null as any) // guarded by hasSupabaseEnv
+let initPromise: Promise<void> | null = null
+
+export async function ensureSupabase(): Promise<SupabaseClient | null> {
+  if (supabase) return supabase
+  if (!initPromise) {
+    initPromise = (async () => {
+      try {
+        const r = await fetch('/api/public-env', { cache: 'no-store' })
+        if (!r.ok) return
+        const j = await r.json()
+        url = j.VITE_SUPABASE_URL || j.SUPABASE_URL
+        anon = j.VITE_SUPABASE_ANON_KEY
+        if (url && anon) {
+          supabase = createClient(url, anon, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
+          hasSupabaseEnv = true
+        }
+      } catch { /* noop */ }
+    })()
+  }
+  await initPromise
+  return supabase
+}

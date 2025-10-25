@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../../lib/supabaseClient'
+import { ensureSupabase } from '../../lib/supabaseClient'
 import { useSession } from '../../stores/session'
 
 export default function Shortlist() {
@@ -9,7 +9,9 @@ export default function Shortlist() {
 
   useEffect(()=>{ (async ()=>{
     if (!session) return
-    const { data } = await supabase.from('matches_view').select('*').eq('nurse_user_id', session.user.id).limit(20)
+    const sb = await ensureSupabase()
+    if (!sb) return
+    const { data } = await sb.from('matches_view').select('*').eq('nurse_user_id', session.user.id).limit(20)
     setRows(data ?? [])
   })()}, [session?.user?.id])
 
@@ -17,8 +19,7 @@ export default function Shortlist() {
     setBusy(matchId)
     try {
       const r = await fetch('/api/holds/create-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ matchId, amountCents: 2000 })
       })
       const j = await r.json()
@@ -41,11 +42,7 @@ export default function Shortlist() {
             <div className="text-sm text-neutral-600 mb-3">${r.weekly_price}/wk • match score ~{Math.round(r.score ?? 70)}</div>
             <div className="flex gap-2">
               <a className="btn btn-primary" href={`/chat/${r.id}`}>Open chat</a>
-              <button
-                className="btn"
-                onClick={()=>softHold(r.id)}
-                disabled={busy===r.id}
-              >
+              <button className="btn" onClick={()=>softHold(r.id)} disabled={busy===r.id}>
                 {busy===r.id ? 'Holding…' : 'Soft hold'}
               </button>
             </div>
