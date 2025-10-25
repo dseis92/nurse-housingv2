@@ -1,4 +1,4 @@
 {
-  "VITE_SUPABASE_URL": "",
-  "VITE_SUPABASE_ANON_KEY": ""
+  "VITE_SUPABASE_URL": "https://ulnijwtaizjoinnwxhot.supabase.co",
+  "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsbmlqd3RhaXpqb2lubnd4aG90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0NTk3NDQsImV4cCI6MjA3NjAzNTc0NH0.05F2aWQU4LnvYWeA6qrlR3pR60eVzVx-39AwiipGc1s"
 }

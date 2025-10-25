@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ensureSupabase } from '../../lib/supabaseClient'
 import { useSession } from '../../stores/session'
+import { getAuthRedirectURL } from '../../lib/authRedirect'
 
 export default function LoginPage() {
   const { session, refresh } = useSession()
@@ -14,17 +15,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => { refresh() }, [])
-  // Try to pre-initialize Supabase, but don't block UI if it takes too long
   useEffect(() => {
     let alive = true
     ;(async () => {
       const sb = await ensureSupabase()
-      if (alive) {
-        setReady(!!sb)
-        setLoading(false)
-      }
+      if (alive) { setReady(!!sb); setLoading(false) }
     })()
-    // fallback: even if ensureSupabase() returns null, stop showing loader after 2s
     const t = setTimeout(() => { if (alive) setLoading(false) }, 2000)
     return () => { alive = false; clearTimeout(t) }
   }, [])
@@ -40,18 +36,29 @@ export default function LoginPage() {
     e.preventDefault()
     setErr(null)
     const sb = await ensureSupabase()
-    if (!sb) {
-      setErr('Supabase config is missing. Check /config.json or Vercel env.')
-      return
-    }
+    if (!sb) { setErr('Supabase config is missing. Check /config.json or .env.local'); return }
     try {
       await sb.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: window.location.origin }
+        options: { emailRedirectTo: getAuthRedirectURL() }
       })
       setSent(true)
     } catch (e: any) {
       setErr(e?.message || 'Failed to send magic link')
+    }
+  }
+
+  const signInWithGoogle = async () => {
+    setErr(null)
+    const sb = await ensureSupabase()
+    if (!sb) { setErr('Supabase config is missing.'); return }
+    try {
+      await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: getAuthRedirectURL() }
+      })
+    } catch (e: any) {
+      setErr(e?.message || 'Google sign-in failed')
     }
   }
 
@@ -83,11 +90,26 @@ export default function LoginPage() {
           <button
             type="submit"
             className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
-            // keep enabled even when not ready; we guard in handler
             disabled={false}
             aria-busy={loading && !ready}
           >
             Send magic link
+          </button>
+
+          <div className="relative text-center my-2">
+            <span className="px-2 text-xs text-neutral-500 bg-white relative z-10">or</span>
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-neutral-200" />
+          </div>
+
+          <button
+            type="button"
+            onClick={signInWithGoogle}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2 font-medium hover:bg-neutral-50 active:bg-neutral-100 transition"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
+              <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.24 1.4-1.63 4.1-5.4 4.1-3.25 0-5.9-2.7-5.9-6s2.65-6 5.9-6c1.85 0 3.1.78 3.8 1.45l2.6-2.5C16.9 3 14.65 2 12 2 6.9 2 2.8 6.1 2.8 11.2S6.9 20.4 12 20.4c6.6 0 8.2-4.6 7.9-7V10.2H12z"/>
+            </svg>
+            Continue with Google
           </button>
         </form>
       )}
@@ -96,7 +118,7 @@ export default function LoginPage() {
 
       {!ready && !loading && (
         <div className="mt-3 text-xs text-neutral-500">
-          Tip: App couldn’t auto-load Supabase at startup. Clicking “Send magic link” will try again.
+          Tip: App couldn’t auto-load Supabase at startup. Clicking a button will try again.
         </div>
       )}
     </div>
