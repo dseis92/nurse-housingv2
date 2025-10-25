@@ -1,85 +1,73 @@
-import { useMemo } from "react";
-import { Loader2, RefreshCw, Sparkles } from "lucide-react";
-import SwipeCard from "./SwipeCard";
-import {
-  selectActiveContract,
-  selectCurrentNurseProfile,
-  selectSwipeListings,
-  useAppStore,
-} from "../../stores/useAppStore";
+import { useCallback, useMemo, useState } from 'react'
+import SwipeCard, { type ListingCard, type SwipeDirection } from './SwipeCard'
+import { Heart, X } from 'lucide-react'
 
-export default function SwipeDeck() {
-  const listings = useAppStore(selectSwipeListings);
-  const contract = useAppStore(selectActiveContract);
-  const nurseProfile = useAppStore(selectCurrentNurseProfile);
-  const { likeListing, passListing, addToShortlist, refreshSwipeQueue } = useAppStore((state) => state.actions);
+type Props = {
+  cards: ListingCard[]
+  onVote?: (id: string, dir: SwipeDirection) => Promise<void> | void
+}
 
-  const activeListing = listings[0];
+export default function SwipeDeck({ cards, onVote }: Props) {
+  const [queue, setQueue] = useState(cards)
+  const top = queue[0]
+  const [requestSwipe, setRequestSwipe] = useState<{ id: string, dir: SwipeDirection } | null>(null)
 
-  const queueMeta = useMemo(
-    () => ({
-      total: listings.length,
-      hasListings: listings.length > 0,
-    }),
-    [listings]
-  );
+  const handleSwiped = useCallback(async (id: string, dir: SwipeDirection) => {
+    setRequestSwipe(null)
+    setQueue(q => q.filter(c => c.id !== id))
+    try { await onVote?.(id, dir) } catch { /* noop */ }
+  }, [onVote])
 
-  if (!contract || !nurseProfile) {
-    return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center rounded-3xl border border-zinc-200 bg-white text-center">
-        <Loader2 className="mb-4 h-10 w-10 animate-spin text-teal-600" />
-        <p className="text-lg font-semibold text-zinc-900">Set up a contract to build your swipe queue</p>
-        <p className="mt-2 max-w-md text-sm text-zinc-500">
-          Once you complete your assignment intake, we will score vetted rentals against your guardrails.
-        </p>
-      </div>
-    );
+  const stacked = useMemo(() => queue.slice(0, 3), [queue])
+
+  const buttonSwipe = (dir: SwipeDirection) => {
+    if (!top) return
+    setRequestSwipe({ id: top.id, dir })
   }
 
-  if (!queueMeta.hasListings) {
+  if (queue.length === 0) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-300 bg-white text-center">
-        <Sparkles className="mb-4 h-10 w-10 text-teal-600" />
-        <p className="text-lg font-semibold text-zinc-900">You&apos;re caught up!</p>
-        <p className="mt-2 max-w-md text-sm text-zinc-500">
-          The ops team is curating more matches based on your safety guardrails and commute filters.
-        </p>
-        <button
-          type="button"
-          onClick={refreshSwipeQueue}
-          className="mt-6 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-5 py-2 text-sm font-semibold text-zinc-700 shadow-sm hover:border-zinc-300 hover:text-zinc-900"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Reload matches
-        </button>
+      <div className="w-full max-w-lg mx-auto">
+        <div className="rounded-3xl border p-8 text-center">
+          <h3 className="text-xl font-semibold mb-2">You’re all caught up 🎉</h3>
+          <p className="text-neutral-600">Check back later for new places or adjust your filters.</p>
+        </div>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-zinc-500">Swipe queue</p>
-          <h1 className="text-xl font-semibold text-zinc-900">
-            {queueMeta.total} match
-            {queueMeta.total === 1 ? "" : "es"} ready
-          </h1>
-        </div>
-        <p className="text-xs text-zinc-500">Guardrails: commute ≤ {nurseProfile.preferences.commute.maxMinutes} min</p>
+    <div className="w-full max-w-lg mx-auto">
+      {/* Card stage */}
+      <div className="relative h-[540px] md:h-[620px]">
+        {stacked.map((c, i) => (
+          <SwipeCard
+            key={c.id}
+            data={c}
+            index={i}
+            onSwiped={handleSwiped}
+            requestSwipe={requestSwipe}
+          />
+        ))}
       </div>
 
-      {activeListing && (
-        <SwipeCard
-          listing={activeListing}
-          contract={contract}
-          preferences={nurseProfile.preferences}
-          onLike={() => likeListing(activeListing.id)}
-          onPass={() => passListing(activeListing.id)}
-          onShortlist={() => addToShortlist(activeListing.id)}
-        />
-      )}
+      {/* Controls */}
+      <div className="mt-4 flex items-center justify-center gap-6">
+        <button
+          onClick={()=>buttonSwipe('left')}
+          className="inline-flex items-center justify-center w-14 h-14 rounded-full border bg-white hover:bg-neutral-50 active:bg-neutral-100 shadow"
+          aria-label="Pass"
+        >
+          <X className="w-6 h-6 text-red-500" />
+        </button>
+        <button
+          onClick={()=>buttonSwipe('right')}
+          className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white shadow-md"
+          aria-label="Like"
+        >
+          <Heart className="w-7 h-7" />
+        </button>
+      </div>
     </div>
-  );
+  )
 }
-
