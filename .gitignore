@@ -7,3 +7,5 @@ dist
 .DS_Store
 # generated css (built by tailwind cli)
 src/styles/tailwind-output.css
+.vercel
+.env*.local
