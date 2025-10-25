@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview --port 5174",
     "db:link": "supabase link --project-ref $SUPABASE_PROJECT_REF",
-    "db:push": "supabase db push"
+    "db:push": "supabase db push",
+    "prebuild": "node scripts/generate-public-config.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.76.1",

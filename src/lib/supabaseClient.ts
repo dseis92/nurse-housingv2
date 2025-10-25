@@ -1,32 +1,40 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-let url  = (import.meta as any)?.env?.VITE_SUPABASE_URL as string | undefined
-let anon = (import.meta as any)?.env?.VITE_SUPABASE_ANON_KEY as string | undefined
+let client: SupabaseClient | null = null
+let inited = false
 
-export let hasSupabaseEnv = Boolean(url && anon)
-export let supabase: SupabaseClient | null = hasSupabaseEnv
-  ? createClient(url!, anon!, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
-  : null
-
-let initPromise: Promise<void> | null = null
+async function loadPublicConfig(): Promise<{ url: string; anon: string } | null> {
+  try {
+    const r = await fetch('/config.json', { cache: 'no-store' })
+    if (!r.ok) return null
+    const j = await r.json()
+    const url = j.VITE_SUPABASE_URL || ''
+    const anon = j.VITE_SUPABASE_ANON_KEY || ''
+    return (url && anon) ? { url, anon } : null
+  } catch { return null }
+}
 
 export async function ensureSupabase(): Promise<SupabaseClient | null> {
-  if (supabase) return supabase
-  if (!initPromise) {
-    initPromise = (async () => {
-      try {
-        const r = await fetch('/api/public-env', { cache: 'no-store' })
-        if (!r.ok) return
-        const j = await r.json()
-        url = j.VITE_SUPABASE_URL || j.SUPABASE_URL
-        anon = j.VITE_SUPABASE_ANON_KEY
-        if (url && anon) {
-          supabase = createClient(url, anon, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
-          hasSupabaseEnv = true
-        }
-      } catch { /* noop */ }
-    })()
+  if (client) return client
+  if (inited) return client
+  inited = true
+
+  // 1) If Vite injected values are present (dev or correctly configured prod), use them.
+  const url = (import.meta as any)?.env?.VITE_SUPABASE_URL as string | undefined
+  const anon = (import.meta as any)?.env?.VITE_SUPABASE_ANON_KEY as string | undefined
+  if (url && anon) {
+    client = createClient(url, anon, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
+    return client
   }
-  await initPromise
-  return supabase
+
+  // 2) Otherwise, load from static public/config.json (committed or generated at build)
+  const cfg = await loadPublicConfig()
+  if (cfg) {
+    client = createClient(cfg.url, cfg.anon, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
+    return client
+  }
+
+  // 3) Give up (no keys)
+  client = null
+  return client
 }
