@@ -1,26 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>Nurse Housing — Find Your Perfect Match</title>
-    <meta
-      name="theme-color"
-      content="#ffffff"
-    />
-    <link
-      href="/src/styles.css"
-      rel="stylesheet"
-    />
+    <title>Wausau Area Vacation Rentals | Homes, Cabins & Apartments</title>
+    <meta name="description" content="Book Wausau, Weston, Rothschild, Schofield, Kronenwetter, Mosinee, Merrill and Antigo vacation rentals. No junk fees, instant booking, verified homes." />
+    <link rel="canonical" href="/" />
+    <meta property="og:title" content="Wausau Area Vacation Rentals | Homes, Cabins & Apartments" />
+    <meta property="og:description" content="Search verified rentals across the Wausau area with instant booking. No hidden fees." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="/" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <script>
+      // register SW
+      window.addEventListener('load', () => {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/sw.js').catch(()=>{});
+        }
+      });
+    </script>
+
+    <!-- Organization + Website + ItemList -->
+    <script type="application/ld+json">
+    {
+      "@context":"https://schema.org",
+      "@type":"Organization",
+      "name":"Northwoods Stays",
+      "url":"/",
+      "logo":"/icons/icon-192.png",
+      "sameAs":[]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context":"https://schema.org",
+      "@type":"WebSite",
+      "name":"Northwoods Stays",
+      "url":"/",
+      "potentialAction":{
+        "@type":"SearchAction",
+        "target":"/?q={search_term_string}",
+        "query-input":"required name=search_term_string"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context":"https://schema.org",
+      "@type":"ItemList",
+      "name":"Featured Rentals",
+      "itemListElement":[
+        {"@type":"ListItem","position":1,"url":"/#w001"},
+        {"@type":"ListItem","position":2,"url":"/#w002"},
+        {"@type":"ListItem","position":3,"url":"/#w003"}
+      ]
+    }
+    </script>
   </head>
-  <body class="min-h-screen">
+  <body>
     <div id="root"></div>
-    <script
-      type="module"
-      src="/src/main.tsx"
-    ></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,1 +1,7 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
+@layer base {
+  .form-input {
+    @apply w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-700 placeholder:text-zinc-400 focus:border-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-200;
+  }
+}

@@ -8,15 +8,22 @@ import { useFilterStore } from '../../stores/filters'
 import { computeMatch } from '../../lib/match'
 import { useEffect, useState } from 'react'
 import { useUIStore } from '../../stores/ui'
+import Onboarding from '../../components/Onboarding'
+import { motion } from 'framer-motion'
+import { containerStagger, itemCard } from '../../lib/motion'
+import ScrollProgress from '../../components/ScrollProgress'
+import StickyNav from '../../components/StickyNav'
+import FullHero from '../../components/FullHero'
+import FeatureTriad from '../../components/FeatureTriad'
 
 export default function HomePage(){
   const filters = useFilterStore(s=>s.filters)
   const [loading,setLoading]=useState(true)
-  const [data]=useState(LISTINGS)
+  const data = LISTINGS
   const selectedId = useUIStore(s=>s.selectedId)
   const close = useUIStore(s=>s.close)
 
-  useEffect(()=>{ const t=setTimeout(()=>setLoading(false),500); return ()=>clearTimeout(t)},[])
+  useEffect(()=>{ const t=setTimeout(()=>setLoading(false),450); return ()=>clearTimeout(t)},[])
 
   const results = data
     .filter(l=>{
@@ -25,12 +32,12 @@ export default function HomePage(){
         const ok = new Date(l.availability.start)<=new Date(start) && new Date(l.availability.end)>=new Date(end)
         if(!ok) return false
       }
-      if(filters.pet && !l.features.pet.allowed) return false
-      if(filters.parking && !l.features.parking.available) return false
-      if(filters.ev && !l.features.parking.ev) return false
-      if(filters.largeVehicle && !l.features.parking.largeVehicle) return false
-      if(filters.quiet && !l.features.quiet) return false
-      if(filters.safe && !l.features.safe) return false
+      if((filters as any).pet && !l.features.pet.allowed) return false
+      if((filters as any).parking && !l.features.parking.available) return false
+      if((filters as any).ev && !l.features.parking.ev) return false
+      if((filters as any).largeVehicle && !l.features.parking.largeVehicle) return false
+      if((filters as any).quiet && !l.features.quiet) return false
+      if((filters as any).safe && !l.features.safe) return false
       return true
     })
     .map(l=>({l,score:computeMatch(l,filters)}))
@@ -38,26 +45,41 @@ export default function HomePage(){
 
   return (
     <main>
+      <ScrollProgress />
       <TopBar/>
-      <section className="container-constraint pt-6 md:pt-8">
-        <div className="mb-6 space-y-2">
-          <h1 className="text-2xl font-bold">Your next home, but make it a match 💘</h1>
-          <p className="text-sm text-zinc-600">Set dates, pick a hospital, toggle must-haves. We surface nurse-friendly homes with all-in pricing.</p>
-        </div>
-        <FilterBar/>
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <FullHero/>
+      <StickyNav/>
+
+      <section className="container-constraint pt-4" id="results">
+        <motion.div
+          className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+          variants={containerStagger as any}
+          initial="hidden"
+          animate="show"
+        >
           {loading
-            ? Array.from({length:6}).map((_,i)=>(<div key={i} className="h-80 animate-pulse rounded-2xl bg-zinc-200"/>))
-            : results.map(({l,score})=>(<ListingCard key={l.id} l={l} score={score}/>))
+            ? Array.from({length:6}).map((_,i)=>(
+                <motion.div key={`s-${i}`} className="h-80 rounded-2xl bg-zinc-200" variants={itemCard as any}/>
+              ))
+            : results.map(({l,score})=>(
+                <motion.div key={l.id} variants={itemCard as any}>
+                  <ListingCard l={l} score={score}/>
+                </motion.div>
+              ))
           }
-        </div>
+        </motion.div>
+
         {!loading && results.length===0 && (
-          <div className="mt-10 rounded-2xl border border-dashed border-zinc-300 p-8 text-center">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-10 rounded-2xl border border-dashed border-zinc-300 p-8 text-center">
             <div className="text-lg font-semibold">No perfect matches yet</div>
             <p className="mt-1 text-sm text-zinc-600">Try relaxing a filter or widening your dates.</p>
-          </div>
+          </motion.div>
         )}
       </section>
+
+      <FeatureTriad/>
+
+      <Onboarding/>
 
       <Modal open={!!selectedId} onClose={close} title="Home Details">
         {selectedId ? <ListingDetails id={selectedId}/> : null}

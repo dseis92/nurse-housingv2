@@ -1,14 +1,10 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwind from "@tailwindcss/vite";
+import { fileURLToPath, URL } from "node:url";
 
-// minimal Vite config; Tailwind v4 is handled by its standalone CLI (no PostCSS)
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  server: {
-    port: 5173,
-  },
-  preview: {
-    port: 5174,
-  },
+  plugins: [react(), tailwind()],
+  resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
+  server: { hmr: { overlay: true } }  // <-- show runtime errors
 });
