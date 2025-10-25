@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ensureSupabase, hasSupabaseEnv } from '../../lib/supabaseClient'
+import { ensureSupabase } from '../../lib/supabaseClient'
 import { useSession } from '../../stores/session'
 
 export default function LoginPage() {
@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [err, setErr] = useState<string | null>(null)
-  const [ready, setReady] = useState(hasSupabaseEnv)
+  const [ready, setReady] = useState(false)
 
   useEffect(() => { refresh() }, [])
   useEffect(() => { (async()=>{ const sb = await ensureSupabase(); setReady(!!sb) })() }, [])
