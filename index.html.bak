@@ -63,7 +63,6 @@
     }
     </script>
   </head>
-  <script>window.__APP_CFG={ url:"%VITE_SUPABASE_URL%", anon:"%VITE_SUPABASE_ANON_KEY%" };</script>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
