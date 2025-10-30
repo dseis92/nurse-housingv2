@@ -15,7 +15,7 @@ export default function UserRoleSwitcher() {
   const roles = useMemo<UserRole[]>(() => ["nurse", "owner", "admin"], []);
 
   return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white p-1 text-xs">
+    <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/80 p-1 text-xs shadow-sm shadow-slate-900/10">
       {roles.map((value) => (
         <button
           key={value}
@@ -23,7 +23,9 @@ export default function UserRoleSwitcher() {
           onClick={() => setRole(value)}
           className={[
             "rounded-full px-3 py-1 font-medium transition",
-            role === value ? "bg-zinc-900 text-white" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
+            role === value
+              ? "bg-sky-600 text-white shadow-sm shadow-sky-900/20"
+              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
           ].join(" ")}
         >
           {roleLabels[value]}
@@ -32,4 +34,3 @@ export default function UserRoleSwitcher() {
     </div>
   );
 }
-

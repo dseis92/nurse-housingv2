@@ -16,12 +16,12 @@ export default function TopNav() {
   }, [contract]);
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center gap-6 border-b border-zinc-200 bg-white/90 px-4 backdrop-blur sm:px-6 lg:px-10">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-6 border-b border-slate-200/60 bg-white/80 px-4 backdrop-blur-md shadow-sm shadow-slate-900/5 sm:px-6 lg:px-10">
       <div className="flex flex-1 items-center gap-4">
         <UserRoleSwitcher />
         {contract && (
-          <div className="hidden shrink-0 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 sm:flex sm:items-center sm:gap-2">
-            <ShieldCheck className="h-4 w-4 text-teal-600" />
+          <div className="hidden shrink-0 rounded-full border border-sky-200/70 bg-sky-50/80 px-3 py-1.5 text-xs font-medium text-sky-700 sm:flex sm:items-center sm:gap-2">
+            <ShieldCheck className="h-4 w-4 text-sky-600" />
             {contractSummary}
           </div>
         )}
@@ -29,24 +29,24 @@ export default function TopNav() {
 
       <div className="flex items-center gap-3 text-sm">
         <div className="hidden sm:flex sm:flex-col sm:items-end">
-          <span className="font-medium text-zinc-900">{currentUser?.fullName ?? "Guest"}</span>
-          <span className="flex items-center gap-1 text-xs text-zinc-500">
-            <MapPin className="h-3 w-3" />
+          <span className="font-medium text-slate-900">{currentUser?.fullName ?? "Guest"}</span>
+          <span className="flex items-center gap-1 text-xs text-slate-500">
+            <MapPin className="h-3 w-3 text-sky-500" />
             San Francisco Bay Area
           </span>
         </div>
         <button
           type="button"
-          className="relative flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 text-zinc-500 transition hover:text-zinc-900"
+          className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-sky-200 hover:text-slate-900"
         >
           <Bell className="h-5 w-5" />
           {shortlist.length > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-teal-600 text-[10px] font-semibold text-white">
+            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-sky-600 text-[10px] font-semibold text-white">
               {shortlist.length}
             </span>
           )}
         </button>
-        <div className="hidden h-10 w-10 overflow-hidden rounded-full border border-zinc-200 sm:block">
+        <div className="hidden h-10 w-10 overflow-hidden rounded-full border border-slate-200 sm:block">
           {currentUser?.avatarUrl ? (
             <img
               src={currentUser.avatarUrl}
@@ -54,7 +54,7 @@ export default function TopNav() {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-xs font-semibold text-zinc-500">
+            <div className="flex h-full w-full items-center justify-center bg-slate-100 text-xs font-semibold text-slate-500">
               {currentUser?.fullName
                 ?.split(" ")
                 .map((part) => part[0])
@@ -67,4 +67,3 @@ export default function TopNav() {
     </header>
   );
 }
-

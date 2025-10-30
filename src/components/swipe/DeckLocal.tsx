@@ -2,6 +2,7 @@ import { useMemo, useState, useCallback } from 'react'
 import SwipeCard, { type ListingCard, type SwipeDirection } from './SwipeCard'
 import ListingModal from './ListingModal'
 import { Heart, Star, X } from 'lucide-react'
+import LottieAnimation from '../ui/LottieAnimation'
 
 function sample(count = 8): ListingCard[] {
   const base: ListingCard[] = [
@@ -75,8 +76,13 @@ export default function DeckLocal() {
     <div className="relative mx-auto max-w-3xl">
       <div className="relative h-[760px] md:h-[820px]">
         {visible.length === 0 ? (
-          <div className="absolute inset-0 grid place-items-center rounded-3xl border bg-white text-neutral-500">
-            You’re all caught up — check back later 👋
+          <div className="absolute inset-0 grid place-items-center rounded-3xl border border-slate-200 bg-white/80 text-slate-500">
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-40 w-40">
+                <LottieAnimation animation="swipeDeckEmpty" loop={false} />
+              </div>
+              <p className="text-sm text-slate-600">You’re all caught up — check back later 👋</p>
+            </div>
           </div>
         ) : (
           visible.map((item, idx) => (
@@ -93,36 +99,36 @@ export default function DeckLocal() {
       </div>
 
       {/* action bar */}
-      <div className="mt-4 rounded-3xl border bg-white p-3">
+      <div className="mt-4 rounded-3xl border border-slate-200 bg-white/90 p-4 shadow-lg shadow-slate-900/5">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs text-neutral-600">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
+          <div className="flex items-center gap-2 text-xs text-slate-600">
+            <span className="inline-block h-2 w-2 rounded-full bg-sky-500" />
             Decision feedback shared instantly with owner
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={() => act('left')}
-              className="inline-flex items-center gap-2 rounded-full border px-4 h-10 text-neutral-700 hover:bg-neutral-50 active:scale-95 transition"
+              className="btn btn-outline gap-2 h-10"
               aria-label="Pass"
             >
-              <X className="w-4 h-4" /> <span>Pass</span>
+              <X className="h-4 w-4" /> <span>Pass</span>
             </button>
 
             <button
               onClick={() => setOpen({ show: true, item: visible[0] ?? null })}
-              className="inline-flex items-center gap-2 rounded-full border px-4 h-10 text-emerald-700 hover:bg-emerald-50 active:scale-95 transition"
+              className="btn btn-ghost gap-2 h-10 text-sky-700"
               aria-label="Shortlist"
             >
-              <Star className="w-4 h-4" /> <span>Shortlist</span>
+              <Star className="h-4 w-4" /> <span>Shortlist</span>
             </button>
 
             <button
               onClick={() => act('right')}
-              className="inline-flex items-center gap-2 rounded-full bg-emerald-600 text-white px-5 h-10 hover:bg-emerald-700 active:scale-95 transition"
+              className="btn btn-primary gap-2 h-10 px-5"
               aria-label="Match"
             >
-              <Heart className="w-4 h-4" /> <span>Match</span>
+              <Heart className="h-4 w-4" /> <span>Match</span>
             </button>
           </div>
         </div>

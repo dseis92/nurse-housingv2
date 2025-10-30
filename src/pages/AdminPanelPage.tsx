@@ -9,16 +9,16 @@ export default function AdminPanelPage() {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-wide text-teal-600">Ops control</p>
-            <h1 className="text-2xl font-semibold text-zinc-900">Launch pad – San Francisco</h1>
-            <p className="mt-2 max-w-xl text-sm text-zinc-600">
+            <p className="text-xs uppercase tracking-wide text-sky-600">Ops control</p>
+            <h1 className="text-2xl font-semibold text-slate-900">Launch pad – San Francisco</h1>
+            <p className="mt-2 max-w-xl text-sm text-slate-600">
               Track verified inventory, guardrail compliance, and hold velocity before expanding to the next metro.
             </p>
           </div>
-          <div className="flex items-center gap-3 text-xs text-zinc-500">
+          <div className="flex items-center gap-3 text-xs text-slate-500">
             <Badge icon={ShieldCheck} label="RLS enforced" />
             <Badge icon={Users} label={`${verifications.length} verifications`} />
           </div>
@@ -29,8 +29,8 @@ export default function AdminPanelPage() {
 
       <section className="space-y-4">
         <header>
-          <p className="text-xs uppercase tracking-wide text-teal-600">Inventory health</p>
-          <h2 className="text-lg font-semibold text-zinc-900">Active furnished rentals</h2>
+          <p className="text-xs uppercase tracking-wide text-sky-600">Inventory health</p>
+          <h2 className="text-lg font-semibold text-slate-900">Active furnished rentals</h2>
         </header>
         <ListingTable listings={listings} />
       </section>
@@ -45,8 +45,8 @@ interface BadgeProps {
 
 function Badge({ icon: Icon, label }: BadgeProps) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1 font-semibold text-zinc-600">
-      <Icon className="h-4 w-4 text-teal-600" />
+    <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-600">
+      <Icon className="h-4 w-4 text-sky-600" />
       {label}
     </span>
   );

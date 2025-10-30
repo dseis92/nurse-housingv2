@@ -26,7 +26,7 @@ export default function ListingForm() {
 
   if (!ownerProfile) {
     return (
-      <div className="rounded-3xl border border-dashed border-zinc-300 bg-white p-6 text-sm text-zinc-500">
+      <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">
         Create an owner profile to add listings.
       </div>
     );
@@ -82,13 +82,13 @@ export default function ListingForm() {
 
   return (
     <form
-      className="space-y-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm"
+      className="space-y-6 rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-lg shadow-slate-900/5"
       onSubmit={handleSubmit}
     >
       <header>
-        <p className="text-xs uppercase tracking-wide text-teal-600">Create Listing</p>
-        <h2 className="text-xl font-semibold text-zinc-900">Nurse-ready rental</h2>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="text-xs uppercase tracking-wide text-sky-600">Create Listing</p>
+        <h2 className="text-xl font-semibold text-slate-900">Nurse-ready rental</h2>
+        <p className="mt-1 text-sm text-slate-600">
           Highlight safety features, commute details, and flexible terms to stand out.
         </p>
       </header>
@@ -248,10 +248,7 @@ export default function ListingForm() {
       </Field>
 
       <div className="flex justify-end">
-        <button
-          type="submit"
-          className="inline-flex items-center gap-2 rounded-full bg-teal-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-        >
+        <button type="submit" className="btn btn-primary gap-2 px-6 py-3">
           Publish to queue
         </button>
       </div>
@@ -266,10 +263,9 @@ interface FieldProps {
 
 function Field({ label, children }: FieldProps) {
   return (
-    <label className="space-y-1 text-sm font-medium text-zinc-600">
-      <span className="text-xs uppercase tracking-wide text-zinc-500">{label}</span>
+    <label className="space-y-1 text-sm font-medium text-slate-600">
+      <span className="text-xs uppercase tracking-wide text-slate-500">{label}</span>
       {children}
     </label>
   );
 }
-

@@ -32,11 +32,11 @@ export default function ChatPanel() {
   };
 
   return (
-    <div className="grid gap-6 rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm md:grid-cols-[240px_1fr] md:p-6">
+    <div className="grid gap-6 rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-lg shadow-slate-900/5 md:grid-cols-[240px_1fr] md:p-6">
       <aside className="space-y-4">
         <header>
-          <p className="text-xs uppercase tracking-wide text-teal-600">Matches</p>
-          <h2 className="text-lg font-semibold text-zinc-900">{matches.length} active</h2>
+          <p className="text-xs uppercase tracking-wide text-sky-600">Matches</p>
+          <h2 className="text-lg font-semibold text-slate-900">{matches.length} active</h2>
         </header>
         <nav className="space-y-2">
           {conversations.map((conversation) => {
@@ -49,28 +49,28 @@ export default function ChatPanel() {
                 className={[
                   "w-full rounded-2xl border px-3 py-3 text-left text-sm transition",
                   activeConversationId === conversation.id
-                    ? "border-teal-200 bg-teal-50 text-teal-900"
-                    : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:text-zinc-900",
+                    ? "border-sky-200 bg-sky-50 text-sky-800 shadow-sm shadow-sky-900/10"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900",
                 ].join(" ")}
               >
                 <p className="font-semibold">{listing?.title ?? "Listing"}</p>
-                <p className="text-xs text-zinc-500">Conversation {conversation.status}</p>
+                <p className="text-xs text-slate-500">Conversation {conversation.status}</p>
               </button>
             );
           })}
         </nav>
       </aside>
 
-      <section className="flex flex-col rounded-3xl border border-zinc-200 bg-zinc-50">
+      <section className="flex flex-col rounded-3xl border border-slate-200 bg-slate-50">
         {activeConversation ? (
           <>
-            <header className="flex items-center justify-between gap-4 border-b border-zinc-200 px-4 py-3">
+            <header className="flex items-center justify-between gap-4 border-b border-slate-200 px-4 py-3">
               <div>
-                <p className="text-xs uppercase tracking-wide text-teal-600">Owner chat</p>
-                <h3 className="text-sm font-semibold text-zinc-900">{relatedListing?.title ?? "Listing"}</h3>
+                <p className="text-xs uppercase tracking-wide text-sky-600">Owner chat</p>
+                <h3 className="text-sm font-semibold text-slate-900">{relatedListing?.title ?? "Listing"}</h3>
               </div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-600">
-                <MessageCircle className="h-3.5 w-3.5 text-teal-600" />
+              <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-600">
+                <MessageCircle className="h-3.5 w-3.5 text-sky-600" />
                 Mutual match
               </span>
             </header>
@@ -89,7 +89,7 @@ export default function ChatPanel() {
                     <div
                       className={[
                         "max-w-xs rounded-2xl px-4 py-2",
-                        isSelf ? "bg-teal-600 text-white" : "bg-white text-zinc-800",
+                        isSelf ? "bg-sky-600 text-white" : "bg-white text-slate-800",
                       ].join(" ")}
                     >
                       <p>{message.body}</p>
@@ -104,25 +104,22 @@ export default function ChatPanel() {
 
             <form
               onSubmit={handleSubmit}
-              className="flex items-center gap-3 border-t border-zinc-200 bg-white p-3"
+              className="flex items-center gap-3 border-t border-slate-200 bg-white p-3"
             >
               <input
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
                 placeholder="Send an update or ask a question"
-                className="flex-1 rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm focus:border-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                className="flex-1 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm focus:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-200"
               />
-              <button
-                type="submit"
-                className="inline-flex items-center gap-2 rounded-full bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-              >
+              <button type="submit" className="btn btn-primary gap-2 px-4">
                 <Send className="h-4 w-4" />
                 Send
               </button>
             </form>
           </>
         ) : (
-          <div className="flex flex-1 items-center justify-center text-sm text-zinc-500">
+          <div className="flex flex-1 items-center justify-center text-sm text-slate-500">
             Select a match to open the conversation.
           </div>
         )}
@@ -130,4 +127,3 @@ export default function ChatPanel() {
     </div>
   );
 }
-

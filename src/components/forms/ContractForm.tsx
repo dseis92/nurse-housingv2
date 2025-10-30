@@ -42,7 +42,7 @@ export default function ContractForm() {
 
   if (!contract || !formState || !nurseProfile) {
     return (
-      <div className="rounded-3xl border border-dashed border-zinc-300 bg-white p-6 text-center text-sm text-zinc-500">
+      <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
         Create a contract to guide matching. Once you add a contract, we will score listings automatically.
       </div>
     );
@@ -68,16 +68,16 @@ export default function ContractForm() {
       className="space-y-6"
       onSubmit={handleSubmit}
     >
-      <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <section className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-lg shadow-slate-900/5">
         <header className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-wide text-teal-600">Assignment</p>
-            <h2 className="text-xl font-semibold text-zinc-900">Hospital details</h2>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="text-xs uppercase tracking-wide text-sky-600">Assignment</p>
+            <h2 className="text-xl font-semibold text-slate-900">Hospital details</h2>
+            <p className="mt-1 text-sm text-slate-600">
               We use these contract guardrails to curate matches and calculate commute distances.
             </p>
           </div>
-          <div className="hidden rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-500 sm:block">
+          <div className="hidden rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500 sm:block">
             Nurse profile • {nurseProfile.specialty} ({nurseProfile.preferredShift} shift)
           </div>
         </header>
@@ -155,16 +155,16 @@ export default function ContractForm() {
       </section>
 
       <section className="grid gap-6 sm:grid-cols-2">
-        <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-wide text-teal-600">Requirements</p>
-          <h3 className="mt-1 text-lg font-semibold text-zinc-900">Guardrails</h3>
-          <div className="mt-4 space-y-4 text-sm text-zinc-600">
+        <div className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-lg shadow-slate-900/5">
+          <p className="text-xs uppercase tracking-wide text-sky-600">Requirements</p>
+          <h3 className="mt-1 text-lg font-semibold text-slate-900">Guardrails</h3>
+          <div className="mt-4 space-y-4 text-sm text-slate-600">
             <label className="flex items-center gap-3">
               <input
                 type="checkbox"
                 checked={formState.pets}
                 onChange={(event) => updateField("pets", event.target.checked)}
-                className="h-4 w-4 rounded border-zinc-300 text-teal-600 focus:ring-teal-500"
+                className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
               />
               Traveling with pets
             </label>
@@ -173,19 +173,19 @@ export default function ContractForm() {
                 type="checkbox"
                 checked={formState.parkingNeeded}
                 onChange={(event) => updateField("parkingNeeded", event.target.checked)}
-                className="h-4 w-4 rounded border-zinc-300 text-teal-600 focus:ring-teal-500"
+                className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
               />
               Overnight parking required
             </label>
-            <div className="flex items-start gap-3 rounded-2xl bg-zinc-50 p-4 text-sm text-zinc-500">
-              <Truck className="mt-0.5 h-4 w-4 text-teal-600" />
+            <div className="flex items-start gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
+              <Truck className="mt-0.5 h-4 w-4 text-sky-600" />
               <span>We apply commute guardrails and stipend checks before adding homes to your swipe queue.</span>
             </div>
           </div>
         </div>
-        <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-wide text-teal-600">Notes</p>
-          <h3 className="mt-1 text-lg font-semibold text-zinc-900">Special requests</h3>
+        <div className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-lg shadow-slate-900/5">
+          <p className="text-xs uppercase tracking-wide text-sky-600">Notes</p>
+          <h3 className="mt-1 text-lg font-semibold text-slate-900">Special requests</h3>
           <textarea
             value={formState.notes}
             onChange={(event) => updateField("notes", event.target.value)}
@@ -197,10 +197,7 @@ export default function ContractForm() {
       </section>
 
       <div className="flex justify-end">
-        <button
-          type="submit"
-          className="inline-flex items-center gap-2 rounded-full bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2"
-        >
+        <button type="submit" className="btn btn-primary gap-2 px-6 py-3">
           Save contract guardrails
         </button>
       </div>
@@ -216,13 +213,12 @@ interface FieldProps {
 
 function Field({ label, icon: Icon, children }: FieldProps) {
   return (
-    <label className="space-y-1 text-sm font-medium text-zinc-600">
-      <span className="flex items-center gap-2 text-xs uppercase tracking-wide text-zinc-500">
-        {Icon && <Icon className="h-4 w-4 text-teal-600" />}
+    <label className="space-y-1 text-sm font-medium text-slate-600">
+      <span className="flex items-center gap-2 text-xs uppercase tracking-wide text-slate-500">
+        {Icon && <Icon className="h-4 w-4 text-sky-600" />}
         {label}
       </span>
       {children}
     </label>
   );
 }
-

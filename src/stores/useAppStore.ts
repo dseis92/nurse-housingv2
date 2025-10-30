@@ -56,8 +56,15 @@ export interface AppState {
   shortlist: ShortlistEntry[];
   swipeQueue: string[];
   safetyBadges: SafetyBadge[];
+  onboarding: {
+    completed: boolean;
+    nurseProfileId?: string;
+    answers: Record<string, unknown>;
+  };
   actions: {
     setRole: (role: UserRole) => void;
+    completeOnboarding: (payload: { nurseProfileId: string; answers: Record<string, unknown> }) => void;
+    resetOnboarding: () => void;
     setActiveContract: (contractId: string) => void;
     likeListing: (listingId: string) => void;
     passListing: (listingId: string) => void;
@@ -96,6 +103,7 @@ export const useAppStore = create<AppState>()(
       shortlist: [],
       swipeQueue: defaultSwipeQueue,
       safetyBadges,
+      onboarding: { completed: Boolean(mockContracts.length), nurseProfileId: mockContracts[0]?.nurseProfileId, answers: {} },
       actions: {
         setRole: (role) =>
           set((state) => {
@@ -106,6 +114,11 @@ export const useAppStore = create<AppState>()(
             };
           }),
         setActiveContract: (contractId) => set(() => ({ activeContractId: contractId })),
+        completeOnboarding: ({ nurseProfileId, answers }) =>
+          set((state) => ({
+            onboarding: { completed: true, nurseProfileId, answers },
+          })),
+        resetOnboarding: () => set(() => ({ onboarding: { completed: false, answers: {} } })),
         likeListing: (listingId) =>
           set((state) => {
             const contract = state.contracts.find((c) => c.id === state.activeContractId);
@@ -258,6 +271,7 @@ export const useAppStore = create<AppState>()(
         matches: state.matches,
         holds: state.holds,
         conversations: state.conversations,
+        onboarding: state.onboarding,
       }),
     }
   )

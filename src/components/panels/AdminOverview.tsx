@@ -53,21 +53,20 @@ export default function AdminOverview() {
   ] as const;
 
   return (
-    <section className="grid gap-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:grid-cols-2 xl:grid-cols-4">
+    <section className="grid gap-4 rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-lg shadow-slate-900/5 sm:grid-cols-2 xl:grid-cols-4">
       {metrics.map((metric) => {
         const Icon = metricIcons[metric.key as keyof typeof metricIcons];
         return (
-          <div key={metric.key} className="rounded-2xl border border-zinc-100 bg-zinc-50/60 p-4">
+          <div key={metric.key} className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
             <div className="flex items-center justify-between">
-              <Icon className="h-6 w-6 text-teal-600" />
-              <span className="text-[10px] uppercase tracking-wide text-zinc-400">{metric.helper}</span>
+              <Icon className="h-6 w-6 text-sky-600" />
+              <span className="text-[10px] uppercase tracking-wide text-slate-400">{metric.helper}</span>
             </div>
-            <p className="mt-4 text-2xl font-semibold text-zinc-900">{metric.value}</p>
-            <p className="text-xs text-zinc-500">{metric.label}</p>
+            <p className="mt-4 text-2xl font-semibold text-slate-900">{metric.value}</p>
+            <p className="text-xs text-slate-500">{metric.label}</p>
           </div>
         );
       })}
     </section>
   );
 }
-

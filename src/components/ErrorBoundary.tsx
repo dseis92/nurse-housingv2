@@ -17,9 +17,9 @@ export default class ErrorBoundary extends React.Component<React.PropsWithChildr
     if (this.state.hasError) {
       return (
         <div className="mx-auto mt-20 max-w-xl px-4">
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-lg">
-            <h1 className="text-xl font-semibold text-zinc-900">Something went wrong</h1>
-            <p className="mt-2 text-sm text-zinc-600">
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-lg">
+            <h1 className="text-xl font-semibold text-slate-900">Something went wrong</h1>
+            <p className="mt-2 text-sm text-slate-600">
               A runtime error occurred. Check the developer console for details. You can refresh the page to try again.
             </p>
           </div>
