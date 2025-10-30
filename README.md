@@ -136,12 +136,13 @@ A master UX + feature checklist compiled from top platforms like Airbnb, Vrbo, B
 
 ## ✅ Latest Implementation Notes
 
-- **Swipe + Map combo** — `src/pages/SwipePage.tsx` now toggles a Mapbox map (`ListingMap`) that gracefully skips listings without coordinates and shows helper copy when lat/lng are missing.
-- **Mapbox Geocoder** — `src/components/map/GeocoderControl.tsx` plugs the Mapbox geocoder into both search and listing maps; clearing a search recenters on current bounds.
-- **Motion System** — `src/config/lottie.ts` centralises animation metadata; `StepperShell`, shortlist empty states, and swipe deck empties all use the new `LottieAnimation` wrapper.
-- **Onboarding Flow** — `src/pages/onboarding/OnboardingPage.tsx` drives quiz-style animation cues per step (progress, map, confetti) and persists answers through `public.upsert_nurse_onboarding`.
-- **Supabase schema** — migration `supabase/migrations/20251025_menu_orders_nurse.sql` creates `listings`, `bookings`, `booking_line_items`, `nurse_profiles`, `nurse_onboarding`, plus storage policies and RPCs for onboarding sync.
-- **Build verification** — `npm run build` passes (watch for large bundles from `@lottiefiles/react-lottie-player`; consider lazy loading later).
+- **Airbnb-inspired shell** — `src/index.css` defines design tokens and button primitives; `AppLayout`, `TopNav`, `SidebarNav`, and `MobileNav` now mirror Airbnb’s polished navigation with pill search, global tokens, and light surfaces.
+- **Explore homepage revamp** — `src/pages/DashboardPage.tsx` delivers the hero marquee, filter pills, list/map toggle, and nurse-specific stats with the new `ListingExploreCard` and `ListingMap` integration.
+- **Listing detail booking flow** — `src/pages/ListingDetailPage.tsx` features a gallery grid, sticky pricing card with animation (`LottieAnimation`), match breakdown pills, and embedded map preview.
+- **Map system upgrades** — `src/components/map/ListingMap.tsx` accepts custom heights and filters invalid coordinates; `GeocoderControl` keeps search consistent across views.
+- **Motion system** — `src/config/lottie.ts` centralises assets while `src/components/ui/LottieAnimation.tsx` handles CDN/local fallbacks; onboarding, swipe empty states, shortlist, and booking cards now surface motion cues.
+- **Supabase schema** — migration `supabase/migrations/20251025_menu_orders_nurse.sql` seeds listings, bookings, and nurse onboarding tables with matching RLS and RPCs.
+- **Build verification** — `npm run build` passes (Vite warns about large chunks from the Lottie player—plan to lazy load heavy animations later).
 
 ### Environment & Secrets
 
@@ -177,5 +178,12 @@ Update `src/config/lottie.ts` if you add CDN URLs or new animations so component
 - `supabase db push` — apply latest migrations (after `supabase link`).
 - `npm run build` — compile production bundle; run before handoff.
 - `npm run dev` — local SPA with swipe + map toggle and onboarding animations.
+
+### Phase 2 Priorities (Suggested)
+
+1. **Host tools** — align owner dashboards with the new design language, add booking pipeline cards, and expose pricing/availability editors.
+2. **Messaging + holds** — wire Supabase conversations/holds tables into the UI, deliver mutual-match chat, and surface the 24h hold timer.
+3. **Payments foundation** — integrate Stripe intent creation for the refundable hold fee and record transactions alongside bookings.
+4. **Performance polish** — code-split heavy surfaces (swipe deck, maps, Lottie) and introduce image CDN or optimization pipeline.
 
 ---

@@ -10,40 +10,47 @@ export default function SidebarNav() {
   const navItems = useMemo(() => navByRole[role], [role]);
 
   return (
-    <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col lg:border-r lg:border-slate-900/20 lg:bg-gradient-to-b lg:from-slate-950 lg:via-slate-900 lg:to-slate-900/95 lg:text-slate-200">
-      <div className="flex h-20 items-center gap-3 px-6">
-        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white/10 text-sky-300 shadow-inner shadow-black/20">
-          <Building2 className="h-5 w-5" />
+    <aside className="relative hidden lg:block lg:w-72 xl:w-80">
+      <div className="sticky top-28 mx-auto flex w-[260px] flex-col gap-8 rounded-3xl border border-[var(--nh-border)] bg-[var(--nh-surface)] p-6 shadow-[var(--nh-shadow-soft)]">
+        <div className="flex items-center gap-3">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[var(--nh-accent-soft)] text-[var(--nh-accent)]">
+            <Building2 className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-[var(--nh-text-primary)]">NurseStays</p>
+            <p className="text-xs text-[var(--nh-text-secondary)]">Stays curated for travel nurses</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-semibold text-white">ShiftMatch Homes</p>
-          <p className="text-xs text-slate-400">Travel Nurse Housing</p>
-        </div>
-      </div>
-      <div className="flex-1 space-y-8 overflow-y-auto px-4 pb-8 pt-6">
-        <nav className="space-y-1 text-sm font-medium text-slate-300">
+
+        <nav className="space-y-2 text-sm font-medium">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
                 [
-                  "group flex items-center gap-3 rounded-xl px-3 py-2 transition",
+                  "group flex items-center gap-3 rounded-2xl px-4 py-2 transition",
                   isActive
-                    ? "bg-white/12 text-white shadow-inner shadow-white/10 ring-1 ring-white/15"
-                    : "text-slate-300 hover:bg-white/8 hover:text-white",
+                    ? "bg-[var(--nh-surface-muted)] text-[var(--nh-text-primary)] shadow-[0_6px_16px_rgba(34,34,34,0.08)]"
+                    : "text-[var(--nh-text-secondary)] hover:bg-[var(--nh-surface-muted)] hover:text-[var(--nh-text-primary)]",
                 ].join(" ")
               }
               end={item.to === "/"}
             >
-              <item.icon className="h-4 w-4 shrink-0 text-sky-300 transition group-hover:text-sky-200" />
+              <item.icon className="h-4 w-4 shrink-0 text-[var(--nh-accent)] transition group-hover:text-[var(--nh-accent)]" />
               <span>{item.label}</span>
             </NavLink>
           ))}
         </nav>
-      </div>
-      <div className="border-t border-white/10 px-6 py-4 text-xs text-slate-400">
-        © {new Date().getFullYear()} ShiftMatch Labs
+
+        <div className="rounded-2xl border border-[var(--nh-border)] bg-[var(--nh-surface-muted)] p-4 text-xs text-[var(--nh-text-secondary)]">
+          <p className="font-semibold text-[var(--nh-text-primary)]">Need help?</p>
+          <p>Our concierge can shortlist vetted stays for your next assignment.</p>
+        </div>
+
+        <div className="text-xs text-[var(--nh-text-secondary)]">
+          © {new Date().getFullYear()} NurseStays Collective
+        </div>
       </div>
     </aside>
   );

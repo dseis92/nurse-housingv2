@@ -12,11 +12,12 @@ interface ListingMapProps {
     lng?: number | null;
     nightlyPrice?: number;
   }>;
+  height?: number | string;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined;
 
-export default function ListingMap({ listings }: ListingMapProps) {
+export default function ListingMap({ listings, height }: ListingMapProps) {
   const validListings = useMemo(
     () =>
       listings.filter(
@@ -67,7 +68,7 @@ export default function ListingMap({ listings }: ListingMapProps) {
       <Map
         {...viewState}
         onMove={handleMove}
-        style={{ width: "100%", height: 420 }}
+        style={{ width: "100%", height: typeof height === "number" ? `${height}px` : height ?? "420px" }}
         mapStyle="mapbox://styles/mapbox/light-v11"
         mapboxAccessToken={MAPBOX_TOKEN}
         attributionControl={false}

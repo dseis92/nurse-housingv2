@@ -5,11 +5,13 @@ import MobileNav from "./MobileNav";
 
 export default function AppLayout({ children }: PropsWithChildren) {
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-900/10 via-slate-50 to-white">
-      <SidebarNav />
-      <div className="flex flex-1 flex-col lg:pl-72">
-        <TopNav />
-        <main className="flex-1 px-4 pb-24 pt-6 sm:px-8 lg:px-10 xl:px-12">{children}</main>
+    <div className="flex min-h-screen flex-col bg-[var(--nh-surface)] text-[var(--nh-text-primary)]">
+      <TopNav />
+      <div className="flex flex-1">
+        <SidebarNav />
+        <main className="flex-1 pb-24 pt-8">
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10">{children}</div>
+        </main>
       </div>
       <MobileNav />
     </div>
