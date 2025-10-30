@@ -30,7 +30,7 @@ const computeSafetyScore = (listing: Listing, preference: NursePreferences) => {
   const base = listing.safetyScore;
   const bonuses = [
     preference.living.privateEntrance && listing.amenities.includes("Private Entry") ? 5 : 0,
-    preference.living.overnightParkingNeeded && listing.safetyFeatures.includes("Gated Parking") ? 4 : 0,
+    preference.commute.overnightParkingNeeded && listing.safetyFeatures.includes("Gated Parking") ? 4 : 0,
     preference.living.femaleOnlyPreferred && listing.description.toLowerCase().includes("female") ? 5 : 0,
   ].reduce((acc, value) => acc + value, 0);
   return clamp(base + bonuses, 0, 100);
@@ -49,4 +49,3 @@ export const calculateMatchScore = (
 
   return { stipendFit, commute, safety, quality, total };
 };
-

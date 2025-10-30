@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState, lazy } from "react";
 import { Link } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -16,8 +16,11 @@ import AdminOverview from "../components/panels/AdminOverview";
 import ListingTable from "../components/panels/ListingTable";
 import ShortlistBoard from "../components/panels/ShortlistBoard";
 import { selectActiveContract, selectCurrentNurseProfile, useAppStore } from "../stores/useAppStore";
-import ListingMap from "../components/map/ListingMap";
 import ListingExploreCard from "../components/listings/ListingExploreCard";
+const ListingMap = lazy(() => import("../components/map/ListingMap"));
+
+type SortKey = "match" | "priceLowHigh" | "priceHighLow" | "commute";
+type DatePreset = { label: string; nights: number };
 
 export default function DashboardPage() {
   const role = useAppStore((state) => state.currentRole);
@@ -40,9 +43,17 @@ function NurseDashboard() {
   const shortlistCount = useAppStore((state) => state.shortlist.length);
   const [view, setView] = useState<"grid" | "map">("grid");
   const [activeFilter, setActiveFilter] = useState<string>("verified");
+  const [sort, setSort] = useState<SortKey>("match");
+  const [searchDestination, setSearchDestination] = useState(contract?.hospital ?? "");
+  const [recentSearches, setRecentSearches] = useState<string[]>(["Seattle", "San Diego", "Austin"]);
+  const [guestCount, setGuestCount] = useState(1);
+  const [selectedPreset, setSelectedPreset] = useState<DatePreset | null>(null);
+  const [priceRange, setPriceRange] = useState<[number, number]>([800, 2400]);
+  const [activeListingId, setActiveListingId] = useState<string | null>(null);
+
   const commuteLimit = nurseProfile?.preferences.commute.maxMinutes ?? 30;
 
-  const heroListings = useMemo(() => listings.slice(0, 8), [listings]);
+  const heroListings = useMemo(() => listings.slice(0, 12), [listings]);
 
   const mapListings = useMemo(
     () =>
@@ -91,23 +102,93 @@ function NurseDashboard() {
     { label: "Parking included", value: "parking" },
   ];
 
+  const popularDestinations = [
+    {
+      city: "Seattle",
+      state: "WA",
+      hero: "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?auto=format&fit=crop&w=800&q=60",
+    },
+    {
+      city: "San Diego",
+      state: "CA",
+      hero: "https://images.unsplash.com/photo-1508873696983-2dfd5898f08b?auto=format&fit=crop&w=800&q=60",
+    },
+    {
+      city: "Austin",
+      state: "TX",
+      hero: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=60",
+    },
+    {
+      city: "Denver",
+      state: "CO",
+      hero: "https://images.unsplash.com/photo-1519861155734-0a5f0b02b27e?auto=format&fit=crop&w=800&q=60",
+    },
+  ];
+
+  const datePresets: DatePreset[] = [
+    { label: "1 week", nights: 7 },
+    { label: "2 weeks", nights: 14 },
+    { label: "4 weeks", nights: 28 },
+  ];
+
+  const handleSearch = () => {
+    if (!searchDestination.trim()) return;
+    setRecentSearches((prev) => {
+      const normalized = searchDestination.trim();
+      const next = [normalized, ...prev.filter((item) => item.toLowerCase() !== normalized.toLowerCase())];
+      return next.slice(0, 4);
+    });
+  };
+
   const filteredListings = useMemo(() => {
     if (!heroListings.length) return [];
+
+    const destinationLower = searchDestination.trim().toLowerCase();
+
+    let results = heroListings.filter((listing) => {
+      const meetsPrice =
+        listing.weeklyPrice >= priceRange[0] && listing.weeklyPrice <= priceRange[1];
+      const matchesDestination = destinationLower
+        ? [listing.city, listing.state, listing.neighborhood]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase()
+            .includes(destinationLower)
+        : true;
+      return meetsPrice && matchesDestination;
+    });
+
     switch (activeFilter) {
       case "verified":
-        return heroListings.filter((listing) => listing.safetyScore >= 90);
+        results = results.filter((listing) => listing.safetyScore >= 90);
+        break;
       case "pets":
-        return heroListings.filter((listing) => listing.petPolicy !== "none");
+        results = results.filter((listing) => listing.petPolicy !== "none");
+        break;
       case "private":
-        return heroListings.filter((listing) => listing.amenities.includes("Private Entrance"));
+        results = results.filter((listing) => listing.amenities.includes("Private Entrance"));
+        break;
       case "workspace":
-        return heroListings.filter((listing) => listing.amenities.some((a) => /desk|workspace/i.test(a)));
+        results = results.filter((listing) => listing.amenities.some((a) => /desk|workspace/i.test(a)));
+        break;
       case "parking":
-        return heroListings.filter((listing) => listing.parking !== "none");
+        results = results.filter((listing) => listing.parking !== "none");
+        break;
       default:
-        return heroListings;
+        break;
     }
-  }, [activeFilter, heroListings]);
+
+    switch (sort) {
+      case "priceLowHigh":
+        return [...results].sort((a, b) => a.weeklyPrice - b.weeklyPrice);
+      case "priceHighLow":
+        return [...results].sort((a, b) => b.weeklyPrice - a.weeklyPrice);
+      case "commute":
+        return [...results].sort((a, b) => a.commuteMinutesNight - b.commuteMinutesNight);
+      default:
+        return results;
+    }
+  }, [activeFilter, heroListings, priceRange, searchDestination, sort]);
 
   const listingsToShow = filteredListings.length ? filteredListings : heroListings;
 
@@ -152,6 +233,166 @@ function NurseDashboard() {
       </section>
 
       <section className="space-y-6">
+        <div className="rounded-[40px] border border-[var(--nh-border)] bg-white/95 p-6 shadow-[var(--nh-shadow-soft)]">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex-1 space-y-4">
+              <div className="grid gap-4 md:grid-cols-[repeat(3,minmax(0,1fr))]">
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--nh-text-secondary)]">
+                    Where
+                  </label>
+                  <input
+                    value={searchDestination}
+                    onChange={(event) => setSearchDestination(event.target.value)}
+                    placeholder="City, neighborhood, or hospital"
+                    className="form-input"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    {recentSearches.map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => setSearchDestination(item)}
+                        className="rounded-full border border-[var(--nh-border)] px-3 py-1 text-xs text-[var(--nh-text-secondary)] hover:border-[var(--nh-border-strong)] hover:text-[var(--nh-text-primary)]"
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--nh-text-secondary)]">
+                    When
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {datePresets.map((preset) => {
+                      const active = selectedPreset?.nights === preset.nights;
+                      return (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          onClick={() => setSelectedPreset(preset)}
+                          className={[
+                            "rounded-full border px-3 py-2 text-xs font-semibold transition",
+                            active
+                              ? "border-[var(--nh-accent)] bg-[var(--nh-accent-soft)] text-[var(--nh-accent)]"
+                              : "border-[var(--nh-border)] text-[var(--nh-text-secondary)] hover:border-[var(--nh-border-strong)] hover:text-[var(--nh-text-primary)]",
+                          ].join(" ")}
+                        >
+                          {preset.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--nh-text-secondary)]">
+                    Who
+                  </label>
+                  <div className="flex items-center gap-3 rounded-full border border-[var(--nh-border)] bg-[var(--nh-surface-muted)] px-3 py-2">
+                    <button
+                      type="button"
+                      onClick={() => setGuestCount((prev) => Math.max(1, prev - 1))}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--nh-border)] text-sm font-semibold text-[var(--nh-text-secondary)]"
+                    >
+                      –
+                    </button>
+                    <span className="min-w-[3ch] text-center text-sm font-semibold text-[var(--nh-text-primary)]">
+                      {guestCount}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setGuestCount((prev) => prev + 1)}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--nh-accent)] bg-[var(--nh-accent-soft)] text-sm font-semibold text-[var(--nh-accent)]"
+                    >
+                      +
+                    </button>
+                    <span className="text-xs text-[var(--nh-text-secondary)]">guests</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--nh-text-secondary)]">
+                  Weekly stipend range
+                </label>
+                <div className="mt-2 flex items-center gap-4">
+                  <input
+                    type="range"
+                    min={600}
+                    max={3000}
+                    value={priceRange[0]}
+                    onChange={(event) =>
+                      setPriceRange(([_, max]) => [Number(event.target.value), Math.max(Number(event.target.value), max)])
+                    }
+                    className="w-full"
+                  />
+                  <input
+                    type="range"
+                    min={800}
+                    max={3500}
+                    value={priceRange[1]}
+                    onChange={(event) =>
+                      setPriceRange(([min]) => [Math.min(min, Number(event.target.value)), Number(event.target.value)])
+                    }
+                    className="w-full"
+                  />
+                  <span className="text-xs font-semibold text-[var(--nh-text-primary)]">
+                    ${priceRange[0]} – ${priceRange[1]}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" onClick={handleSearch} className="btn btn-primary px-6 py-3">
+              Search stays
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <header className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--nh-text-secondary)]">
+              Popular destinations
+            </h3>
+            <button
+              type="button"
+              className="text-xs font-semibold text-[var(--nh-accent)] hover:underline"
+              onClick={() => {
+                setSearchDestination("");
+                setActiveFilter("verified");
+                setSort("match");
+              }}
+            >
+              Reset filters
+            </button>
+          </header>
+          <div className="no-scrollbar flex gap-4 overflow-x-auto pb-2">
+            {popularDestinations.map((destination) => (
+              <button
+                key={destination.city}
+                type="button"
+                onClick={() => setSearchDestination(destination.city)}
+                className="group relative h-36 min-w-[200px] overflow-hidden rounded-3xl bg-[var(--nh-surface-muted)]"
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition group-hover:scale-[1.05]" />
+                <img
+                  src={destination.hero}
+                  alt={`${destination.city}, ${destination.state}`}
+                  className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.05]"
+                />
+                <span className="absolute left-4 bottom-4 text-sm font-semibold text-white">
+                  {destination.city}, {destination.state}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-6">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--nh-text-secondary)]">
@@ -161,9 +402,21 @@ function NurseDashboard() {
               Top picks {contract?.hospital ? `near ${contract.hospital}` : "for travel nurses"}
             </h2>
           </div>
-          <div className="inline-flex items-center gap-1 rounded-full border border-[var(--nh-border)] bg-white p-1 shadow-[var(--nh-shadow-soft)]">
-            <ToggleButton icon={LayoutGrid} label="List" active={view === "grid"} onClick={() => setView("grid")} />
-            <ToggleButton icon={MapIcon} label="Map" active={view === "map"} onClick={() => setView("map")} />
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="inline-flex items-center gap-1 rounded-full border border-[var(--nh-border)] bg-white p-1 shadow-[var(--nh-shadow-soft)]">
+              <ToggleButton icon={LayoutGrid} label="List" active={view === "grid"} onClick={() => setView("grid")} />
+              <ToggleButton icon={MapIcon} label="Map" active={view === "map"} onClick={() => setView("map")} />
+            </div>
+            <select
+              value={sort}
+              onChange={(event) => setSort(event.target.value as SortKey)}
+              className="rounded-full border border-[var(--nh-border)] bg-white px-4 py-2 text-xs font-semibold text-[var(--nh-text-secondary)]"
+            >
+              <option value="match">Best match</option>
+              <option value="priceLowHigh">Price: Low to high</option>
+              <option value="priceHighLow">Price: High to low</option>
+              <option value="commute">Commute time</option>
+            </select>
           </div>
         </header>
 
@@ -191,11 +444,37 @@ function NurseDashboard() {
 
         <div className="rounded-[32px] border border-[var(--nh-border)] bg-white/90 p-6 shadow-[var(--nh-shadow-soft)]">
           {view === "map" ? (
-            <ListingMap listings={mapListings} />
+            <Suspense
+              fallback={
+                <div className="grid h-[420px] place-items-center text-sm text-[var(--nh-text-secondary)]">
+                  Loading map…
+                </div>
+              }
+            >
+              <ListingMap
+                listings={mapListings}
+                activeListingId={activeListingId}
+                onSelect={(id) => {
+                  setActiveListingId(id);
+                  setView("grid");
+                  const element = document.getElementById(`listing-${id}`);
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                }}
+              />
+            </Suspense>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {listingsToShow.map((listing) => (
-                <ListingExploreCard key={listing.id} listing={listing} />
+                <div key={listing.id} id={`listing-${listing.id}`}>
+                  <ListingExploreCard
+                    listing={listing}
+                    onHover={(id) => setActiveListingId(id)}
+                    onLeave={() => setActiveListingId(null)}
+                    onSelect={(id) => setActiveListingId(id)}
+                  />
+                </div>
               ))}
             </div>
           )}

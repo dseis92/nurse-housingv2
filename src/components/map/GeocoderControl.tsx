@@ -10,23 +10,30 @@ interface GeocoderControlProps {
   placeholder?: string;
 }
 
-export default function GeocoderControl({ accessToken, onResult, onClear, placeholder = "Search destinations..." }: GeocoderControlProps) {
-  useControl(
-    () => {
+type GeocoderResult = { center?: [number, number] };
+
+export default function GeocoderControl({
+  accessToken,
+  onResult,
+  onClear,
+  placeholder = "Search destinations...",
+}: GeocoderControlProps) {
+  useControl<MapboxGeocoder>(
+    (_context: unknown) => {
       const geocoder = new MapboxGeocoder({
         accessToken,
         marker: false,
         placeholder,
-        mapboxgl,
+        mapboxgl: mapboxgl as unknown as typeof import("mapbox-gl"),
       });
 
-      geocoder.on("result", (event) => onResult?.(event.result as { center?: [number, number] }));
+      geocoder.on("result", (event: { result?: GeocoderResult }) => onResult?.(event.result ?? {}));
       geocoder.on("clear", () => onClear?.());
 
       return geocoder;
     },
-    ({ map }) => {
-      map.on("load", () => map.resize());
+    ({ map }: { map: any }) => {
+      map?.on("load", () => map.resize());
     }
   );
 

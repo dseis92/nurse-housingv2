@@ -14,6 +14,7 @@ import type {
   SafetyBadge,
   User,
   Verification,
+  Review,
 } from "../types";
 
 const now = new Date();
@@ -386,3 +387,45 @@ export const safetyBadges: SafetyBadge[] = [
   },
 ];
 
+export const mockReviews: Review[] = [
+  {
+    id: uuid(),
+    listingId: "listing_1",
+    reviewerName: "Casey M.",
+    reviewerRole: "Telemetry RN",
+    rating: 5,
+    body: "Felt secure walking in after night shift. Host installed extra lighting and the smart lock made check-in effortless.",
+    createdAt: createDate(-18),
+    stayType: "assignment",
+  },
+  {
+    id: uuid(),
+    listingId: "listing_1",
+    reviewerName: "Danielle S.",
+    reviewerRole: "ICU RN",
+    rating: 4.8,
+    body: "Blackout shades and white noise machine were clutch. Walked to UCSF in under 12 minutes at 6am.",
+    createdAt: createDate(-42),
+    stayType: "contract",
+  },
+  {
+    id: uuid(),
+    listingId: "listing_2",
+    reviewerName: "Maria L.",
+    reviewerRole: "Peds RN",
+    rating: 4.7,
+    body: "Host checked in mid-stay to see if I needed anything. Super responsive and the neighborhood felt safe.",
+    createdAt: createDate(-55),
+    stayType: "assignment",
+  },
+  {
+    id: uuid(),
+    listingId: "listing_3",
+    reviewerName: "Hannah G.",
+    reviewerRole: "Travel PT",
+    rating: 4.6,
+    body: "Street parking overnight was easy and the private entrance gave me peace of mind.",
+    createdAt: createDate(-67),
+    stayType: "short-term",
+  },
+];

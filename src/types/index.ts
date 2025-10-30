@@ -153,8 +153,10 @@ export interface Hold {
   nurseProfileId: string;
   contractId: string;
   expiresAt: string;
-  status: "active" | "released" | "converted";
+  status: "pending" | "active" | "released" | "converted";
   intentFee: number;
+  startDate?: string | null;
+  endDate?: string | null;
 }
 
 export interface Conversation {
@@ -196,3 +198,14 @@ export interface SafetyBadge {
 
 export type SwipeDecision = "like" | "pass" | "super-like";
 
+export interface Review {
+  id: string;
+  listingId: string;
+  reviewerName: string;
+  reviewerRole?: string;
+  rating: number;
+  body: string;
+  createdAt: string;
+  stayType?: "assignment" | "contract" | "short-term";
+  sentimentTags?: string[];
+}

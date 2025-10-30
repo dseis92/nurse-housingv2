@@ -15,7 +15,7 @@ export default function AuthCallback() {
       if (!sb) { setMsg('Missing Supabase config.'); return }
 
       try {
-        await sb.auth.exchangeCodeForSession({ currentUrl: window.location.href }).catch(()=>null)
+        await sb.auth.exchangeCodeForSession(window.location.href).catch(() => null)
         await refresh()
         const { data } = await sb.auth.getSession()
         const uid = data?.session?.user?.id

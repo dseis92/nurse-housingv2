@@ -7,7 +7,7 @@ export const config = { runtime: 'nodejs' }
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
-    const { matchId, amountCents = 2000 } = req.body || {}
+    const { matchId, amountCents = 2000, startDate, endDate } = req.body || {}
     if (!matchId) return res.status(400).json({ error: 'matchId required' })
 
     const supabaseUrl = process.env.SUPABASE_URL!
@@ -21,7 +21,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const supabase = createClient(supabaseUrl, serviceKey)
 
     // 1) create hold row
-    const { data: holdRes, error: holdErr } = await supabase.rpc('create_hold', { p_match_id: matchId, p_amount_cents: amountCents })
+    const { data: holdRes, error: holdErr } = await supabase.rpc('create_hold', {
+      p_match_id: matchId,
+      p_amount_cents: amountCents,
+      p_start_date: startDate ?? null,
+      p_end_date: endDate ?? null,
+    })
     if (holdErr) return res.status(500).json({ error: holdErr.message })
     const holdId = holdRes?.hold_id
 

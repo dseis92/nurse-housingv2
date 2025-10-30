@@ -1,9 +1,9 @@
 import SearchMap, { ListingPin } from "@/components/map/SearchMap";
-import useAppStore from "@/stores/useAppStore";
+import { useAppStore } from "@/stores/useAppStore";
 
 export default function MapPage() {
   // Pull your listings; adjust selector if needed to your store shape
-  const listings = useAppStore((s) => s.listings ?? []);
+  const listings = useAppStore((state) => state.listings ?? []);
   const pins: ListingPin[] =
     (listings || []).map((l: any) => ({
       id: String(l.id ?? l.listing_id ?? crypto.randomUUID()),

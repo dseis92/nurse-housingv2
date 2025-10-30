@@ -14,32 +14,32 @@ A master UX + feature checklist compiled from top platforms like Airbnb, Vrbo, B
 
 ### 🌍 Homepage / Search
 
-- [ ] Hero search bar (destination, dates, guests)
-- [ ] Quick “Where / When / Who” flow
-- [ ] Popular destinations section
-- [ ] Recent searches or suggested areas
-- [ ] Responsive map toggle or preview
+- [x] Hero search bar (destination, dates, guests)
+- [x] Quick “Where / When / Who” flow
+- [x] Popular destinations section
+- [x] Recent searches or suggested areas
+- [x] Responsive map toggle or preview
 
 ### 🧭 Search Results
 
-- [ ] Grid or card view of listings
-- [ ] Price per night clearly visible
-- [ ] Ratings & reviews summary on cards
-- [ ] Filters (price, amenities, location, type, size)
-- [ ] Sort options (price low→high, rating, distance)
-- [ ] Interactive map sync with results
+- [x] Grid or card view of listings
+- [x] Price per night clearly visible
+- [x] Ratings & reviews summary on cards
+- [x] Filters (price, amenities, location, type, size)
+- [x] Sort options (price low→high, rating, distance)
+- [x] Interactive map sync with results
 
 ### 🏡 Listing Detail Page
 
-- [ ] Large photo gallery with thumbnails or carousel
-- [ ] Title, description, amenities
-- [ ] Dynamic pricing / breakdown (base + fees + taxes)
-- [ ] Host profile (photo, rating, verified status)
-- [ ] Guest reviews with star ratings and filters
-- [ ] Calendar availability view
-- [ ] “Book Now” / “Reserve” CTA always visible
-- [ ] Cancellation & refund policies
-- [ ] Similar listings / “You may also like”
+- [x] Large photo gallery with thumbnails or carousel
+- [x] Title, description, amenities
+- [x] Dynamic pricing / breakdown (base + fees + taxes)
+- [x] Host profile (photo, rating, verified status)
+- [x] Guest reviews with star ratings and filters
+- [x] Calendar availability view
+- [x] “Book Now” / “Reserve” CTA always visible
+- [x] Cancellation & refund policies
+- [x] Similar listings / “You may also like”
 
 ### 💳 Booking Flow
 
@@ -138,11 +138,19 @@ A master UX + feature checklist compiled from top platforms like Airbnb, Vrbo, B
 
 - **Airbnb-inspired shell** — `src/index.css` defines design tokens and button primitives; `AppLayout`, `TopNav`, `SidebarNav`, and `MobileNav` now mirror Airbnb’s polished navigation with pill search, global tokens, and light surfaces.
 - **Explore homepage revamp** — `src/pages/DashboardPage.tsx` delivers the hero marquee, filter pills, list/map toggle, and nurse-specific stats with the new `ListingExploreCard` and `ListingMap` integration.
-- **Listing detail booking flow** — `src/pages/ListingDetailPage.tsx` features a gallery grid, sticky pricing card with animation (`LottieAnimation`), match breakdown pills, and embedded map preview.
+- **Search UX slice** — the dashboard now includes a hero search bar (Where/When/Who), price sliders, sorted results, and popular destinations carousel to mirror Airbnb browsing flows.
+- **Listing detail booking flow** — `src/pages/ListingDetailPage.tsx` now includes a media carousel (images + 10s tour), host credibility panel, reviews highlights, availability blocks, pricing breakdown, related listings, and the enhanced hold/shortlist CTAs.
+- **Availability & booking start** — the calendar now pulls from Supabase availability, supports multiple months, disables held/booked dates, and enforces listing minimum stays across both the detail page and booking modal.
+- **Booking modal + hold persistence** — booking requests now pipe the selected stay range into the Supabase hold intent (via `/api/holds/create-intent`), surface progress messaging, and reuse the interactive calendar inside the modal.
+- **Review sentiment chips** — review submissions accept structured nurse-friendly tags, derive sentiment highlights automatically, and display chips across the detail page and review modal for faster social-proof scanning.
+- **Social proof** — reviews sync from Supabase, include a submission form + full modal, and surface highlight chips across the detail page.
+- **Owner/Admin consoles** — `src/pages/OwnerHubPage.tsx`, owner/admin portfolio views, `ListingTable`, and `ChatPanel` now adopt the shared Airbnb styling with pill chips, rounded shells, and concierge copy.
+- **Hold + messaging wiring** — `src/stores/useAppStore.ts` routes 24h hold requests through `/api/holds/create-intent`, persists conversations via Supabase (`sendConversationMessage`), and surfaces hold status feedback in `ListingDetailPage.tsx`.
 - **Map system upgrades** — `src/components/map/ListingMap.tsx` accepts custom heights and filters invalid coordinates; `GeocoderControl` keeps search consistent across views.
 - **Motion system** — `src/config/lottie.ts` centralises assets while `src/components/ui/LottieAnimation.tsx` handles CDN/local fallbacks; onboarding, swipe empty states, shortlist, and booking cards now surface motion cues.
+- **Performance trims** — Lottie player and Mapbox surfaces are loaded on demand (`React.lazy` in Swipe/Dashboard/Listing detail) to keep initial bundles lean.
 - **Supabase schema** — migration `supabase/migrations/20251025_menu_orders_nurse.sql` seeds listings, bookings, and nurse onboarding tables with matching RLS and RPCs.
-- **Build verification** — `npm run build` passes (Vite warns about large chunks from the Lottie player—plan to lazy load heavy animations later).
+- **Build verification** — `npm run build` passes; remaining large chunks are the optional Mapbox/Lottie bundles which now load on-demand via suspense boundaries.
 
 ### Environment & Secrets
 

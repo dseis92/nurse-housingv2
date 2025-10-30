@@ -53,17 +53,17 @@ export default function AdminOverview() {
   ] as const;
 
   return (
-    <section className="grid gap-4 rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-lg shadow-slate-900/5 sm:grid-cols-2 xl:grid-cols-4">
+    <section className="grid gap-5 rounded-[36px] border border-[var(--nh-border)] bg-white/95 p-6 shadow-[var(--nh-shadow-soft)] sm:grid-cols-2 xl:grid-cols-4">
       {metrics.map((metric) => {
         const Icon = metricIcons[metric.key as keyof typeof metricIcons];
         return (
-          <div key={metric.key} className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
-            <div className="flex items-center justify-between">
-              <Icon className="h-6 w-6 text-sky-600" />
-              <span className="text-[10px] uppercase tracking-wide text-slate-400">{metric.helper}</span>
+          <div key={metric.key} className="rounded-[28px] border border-[var(--nh-border)] bg-white p-5 shadow-[var(--nh-shadow-soft)]">
+            <div className="flex items-center justify-between text-xs text-[var(--nh-text-secondary)]">
+              <Icon className="h-6 w-6 text-[var(--nh-accent)]" />
+              <span className="uppercase tracking-[0.18em]">{metric.helper}</span>
             </div>
-            <p className="mt-4 text-2xl font-semibold text-slate-900">{metric.value}</p>
-            <p className="text-xs text-slate-500">{metric.label}</p>
+            <p className="mt-4 text-2xl font-semibold text-[var(--nh-text-primary)]">{metric.value}</p>
+            <p className="text-xs text-[var(--nh-text-secondary)]">{metric.label}</p>
           </div>
         );
       })}

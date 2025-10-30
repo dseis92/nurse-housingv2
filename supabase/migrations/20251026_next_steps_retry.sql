@@ -1,3 +1,6 @@
+-- Retry deployment of next-steps features after earlier partial run.
+-- Contains idempotent versions of owner likes, scoring feed, and hold RPCs.
+
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 1) Mutual matching: owner_likes + RPCs
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -11,11 +14,11 @@ create table if not exists public.owner_likes (
   unique (owner_user_id, listing_id, nurse_user_id)
 );
 alter table public.owner_likes enable row level security;
-drop policy if exists "owner_likes:self" on public.owner_likes;
+drop policy if exists "owner_likes:rw:self" on public.owner_likes;
 create policy "owner_likes:rw:self" on public.owner_likes
 for all to authenticated
-using (owner_user_id = auth.uid())
-with check (owner_user_id = auth.uid());
+using (owner_user_id = (select auth.uid()))
+with check (owner_user_id = (select auth.uid()));
 
 -- Nurse likes listing → only match if owner already liked the nurse for this listing
 create or replace function public.user_like_listing(p_listing_id uuid)
@@ -24,20 +27,17 @@ language plpgsql
 security definer
 as $$
 declare
-  v_user   uuid := auth.uid();
+  v_user   uuid := (select auth.uid());
   v_match  uuid;
   v_owner  uuid;
   v_exists boolean;
 begin
-  -- record nurse like/pass
   insert into public.likes (user_id, listing_id, direction)
   values (v_user, p_listing_id, 'like')
   on conflict (user_id, listing_id) do update set direction = excluded.direction;
 
-  -- who owns this listing?
   select owner_id into v_owner from public.listings where id = p_listing_id;
 
-  -- owner already liked this nurse for this listing?
   select exists(
     select 1 from public.owner_likes
     where listing_id = p_listing_id and nurse_user_id = v_user and decision = 'like'
@@ -61,7 +61,7 @@ language plpgsql
 security definer
 as $$
 declare
-  v_owner uuid := auth.uid();
+  v_owner uuid := (select auth.uid());
   v_match uuid;
   v_nurse_liked boolean;
 begin
@@ -69,7 +69,6 @@ begin
   values (v_owner, p_listing_id, p_nurse_user_id, 'like')
   on conflict (owner_user_id, listing_id, nurse_user_id) do update set decision = 'like';
 
-  -- did nurse already like this listing?
   select exists(
     select 1 from public.likes
     where user_id = p_nurse_user_id and listing_id = p_listing_id and direction = 'like'
@@ -86,8 +85,8 @@ begin
 end;
 $$;
 
-grant execute on function public.user_like_listing(uuid)             to authenticated;
-grant execute on function public.owner_like_listing(uuid, uuid)      to authenticated;
+grant execute on function public.user_like_listing(uuid)        to authenticated;
+grant execute on function public.owner_like_listing(uuid, uuid) to authenticated;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 2) Scoring: score_listings() and get_feed() using scores
@@ -101,11 +100,10 @@ declare
   v_stipend int := 1500;
   v_length  int := 13;
 begin
-  -- pull latest contract for user (if any)
-  select stipend_weekly, length_weeks
+  select weekly_stipend, length_weeks
   into v_stipend, v_length
   from public.contracts
-  where user_id = p_user_id
+  where nurse_user_id = p_user_id
   order by created_at desc
   limit 1;
 
@@ -166,12 +164,11 @@ grant execute on function public.get_feed(uuid)       to authenticated;
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 3) Soft Holds: RPCs + expiry
 -- ─────────────────────────────────────────────────────────────────────────────
--- ensure table exists
 create table if not exists public.holds (
   id uuid primary key default gen_random_uuid(),
   match_id uuid not null references public.matches(id) on delete cascade,
   intent_fee_cents int not null default 2000,
-  status text not null default 'pending', -- pending, active, expired, released
+  status text not null default 'pending' check (status in ('pending','active','expired','released')),
   expires_at timestamptz not null default (now() + interval '24 hours'),
   client_secret text,
   created_at timestamptz default now()
@@ -182,16 +179,26 @@ drop policy if exists "holds:insert:participants" on public.holds;
 create policy "holds:participants" on public.holds
 for select to authenticated
 using (
-  exists(select 1 from public.matches m where m.id = holds.match_id and auth.uid() in (m.nurse_user_id, m.owner_user_id))
+  exists(
+    select 1 from public.matches m
+    where m.id = holds.match_id and (select auth.uid()) in (m.nurse_user_id, m.owner_user_id)
+  )
 );
 create policy "holds:insert:participants" on public.holds
 for insert to authenticated
 with check (
-  exists(select 1 from public.matches m where m.id = holds.match_id and auth.uid() in (m.nurse_user_id, m.owner_user_id))
+  exists(
+    select 1 from public.matches m
+    where m.id = holds.match_id and (select auth.uid()) in (m.nurse_user_id, m.owner_user_id)
+  )
 );
 
--- create_hold → inserts pending hold & returns id (client_secret is set by serverless after Stripe)
-create or replace function public.create_hold(p_match_id uuid, p_amount_cents int default 2000)
+create or replace function public.create_hold(
+  p_match_id uuid,
+  p_amount_cents int default 2000,
+  p_start_date date default null,
+  p_end_date date default null
+)
 returns json
 language plpgsql
 security definer
@@ -199,15 +206,14 @@ as $$
 declare
   v_id uuid;
 begin
-  insert into public.holds (match_id, intent_fee_cents, status, expires_at)
-  values (p_match_id, p_amount_cents, 'pending', now() + interval '24 hours')
+  insert into public.holds (match_id, intent_fee_cents, status, expires_at, start_date, end_date)
+  values (p_match_id, p_amount_cents, 'pending', now() + interval '24 hours', p_start_date, p_end_date)
   returning id into v_id;
 
   return json_build_object('hold_id', v_id);
 end;
 $$;
 
--- expire_holds → mark past-due holds as expired
 create or replace function public.expire_holds()
 returns json
 language sql
@@ -223,21 +229,5 @@ as $$
   select json_build_object('expired', count(*)) from upd;
 $$;
 
-grant execute on function public.create_hold(uuid, int) to authenticated;
-grant execute on function public.expire_holds()         to authenticated;
-
--- ─────────────────────────────────────────────────────────────────────────────
--- 4) RLS hardening (extra safety)
--- ─────────────────────────────────────────────────────────────────────────────
--- listings update/delete only by owner
-drop policy if exists "listings:update:owner" on public.listings;
-create policy "listings:update:owner" on public.listings
-for update to authenticated
-using (owner_id = auth.uid());
-
-drop policy if exists "listings:delete:owner" on public.listings;
-create policy "listings:delete:owner" on public.listings
-for delete to authenticated
-using (owner_id = auth.uid());
-
--- messages are already limited to participants in prior migration (keep as-is)
+grant execute on function public.create_hold(uuid, int, date, date) to authenticated;
+grant execute on function public.expire_holds()       to authenticated;

@@ -13,6 +13,7 @@ export default function ChatPanel() {
     conversations[0]?.id
   );
   const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
 
   const activeConversation = useMemo(
     () => conversations.find((conversation) => conversation.id === activeConversationId),
@@ -24,19 +25,24 @@ export default function ChatPanel() {
     return listings.find((listing) => listing.id === activeConversation.listingId);
   }, [activeConversation, listings]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!draft.trim() || !activeConversation) return;
-    appendMessage(activeConversation.id, { senderId: currentUserId, body: draft.trim() });
-    setDraft("");
+    setSending(true);
+    try {
+      await appendMessage(activeConversation.id, { senderId: currentUserId, body: draft.trim() });
+      setDraft("");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
-    <div className="grid gap-6 rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-lg shadow-slate-900/5 md:grid-cols-[240px_1fr] md:p-6">
-      <aside className="space-y-4">
-        <header>
-          <p className="text-xs uppercase tracking-wide text-sky-600">Matches</p>
-          <h2 className="text-lg font-semibold text-slate-900">{matches.length} active</h2>
+    <div className="grid gap-6 rounded-[36px] border border-[var(--nh-border)] bg-white/95 p-4 shadow-[var(--nh-shadow-soft)] md:grid-cols-[260px_1fr] md:p-6">
+      <aside className="space-y-5">
+        <header className="space-y-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--nh-text-secondary)]">Matches</p>
+          <h2 className="text-lg font-semibold text-[var(--nh-text-primary)]">{matches.length} active</h2>
         </header>
         <nav className="space-y-2">
           {conversations.map((conversation) => {
@@ -47,35 +53,39 @@ export default function ChatPanel() {
                 key={conversation.id}
                 onClick={() => setActiveConversationId(conversation.id)}
                 className={[
-                  "w-full rounded-2xl border px-3 py-3 text-left text-sm transition",
+                  "w-full rounded-2xl border px-4 py-3 text-left text-sm transition",
                   activeConversationId === conversation.id
-                    ? "border-sky-200 bg-sky-50 text-sky-800 shadow-sm shadow-sky-900/10"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900",
+                    ? "border-[var(--nh-accent)] bg-[var(--nh-accent-soft)] text-[var(--nh-accent)] shadow-[var(--nh-shadow-soft)]"
+                    : "border-[var(--nh-border)] bg-white text-[var(--nh-text-secondary)] hover:border-[var(--nh-border-strong)] hover:text-[var(--nh-text-primary)]",
                 ].join(" ")}
               >
-                <p className="font-semibold">{listing?.title ?? "Listing"}</p>
-                <p className="text-xs text-slate-500">Conversation {conversation.status}</p>
+                <p className="font-semibold text-[var(--nh-text-primary)]">{listing?.title ?? "Listing"}</p>
+                <p className="text-xs text-[var(--nh-text-secondary)] capitalize">Status: {conversation.status}</p>
               </button>
             );
           })}
         </nav>
       </aside>
 
-      <section className="flex flex-col rounded-3xl border border-slate-200 bg-slate-50">
+      <section className="flex flex-col rounded-[32px] border border-[var(--nh-border)] bg-[var(--nh-surface-muted)]">
         {activeConversation ? (
           <>
-            <header className="flex items-center justify-between gap-4 border-b border-slate-200 px-4 py-3">
+            <header className="flex items-center justify-between gap-4 border-b border-[var(--nh-border)] bg-white/80 px-5 py-4">
               <div>
-                <p className="text-xs uppercase tracking-wide text-sky-600">Owner chat</p>
-                <h3 className="text-sm font-semibold text-slate-900">{relatedListing?.title ?? "Listing"}</h3>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--nh-text-secondary)]">
+                  Owner chat
+                </p>
+                <h3 className="text-sm font-semibold text-[var(--nh-text-primary)]">
+                  {relatedListing?.title ?? "Listing"}
+                </h3>
               </div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-600">
-                <MessageCircle className="h-3.5 w-3.5 text-sky-600" />
+              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--nh-border)] bg-white px-3 py-1 text-xs font-medium text-[var(--nh-text-secondary)]">
+                <MessageCircle className="h-3.5 w-3.5 text-[var(--nh-accent)]" />
                 Mutual match
               </span>
             </header>
 
-            <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-6 text-sm">
+            <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-6 text-sm">
               {activeConversation.messages.map((message) => {
                 const isSelf = message.senderId === currentUserId;
                 return (
@@ -88,12 +98,12 @@ export default function ChatPanel() {
                   >
                     <div
                       className={[
-                        "max-w-xs rounded-2xl px-4 py-2",
-                        isSelf ? "bg-sky-600 text-white" : "bg-white text-slate-800",
+                        "max-w-sm rounded-3xl px-4 py-3 shadow-sm",
+                        isSelf ? "bg-[var(--nh-accent)] text-white" : "bg-white text-[var(--nh-text-primary)]",
                       ].join(" ")}
                     >
                       <p>{message.body}</p>
-                      <p className="mt-1 text-[10px] uppercase tracking-wide opacity-60">
+                      <p className="mt-2 text-[10px] uppercase tracking-[0.18em] opacity-60">
                         {new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>
@@ -104,22 +114,27 @@ export default function ChatPanel() {
 
             <form
               onSubmit={handleSubmit}
-              className="flex items-center gap-3 border-t border-slate-200 bg-white p-3"
+              className="flex items-center gap-3 border-t border-[var(--nh-border)] bg-white px-4 py-3"
             >
               <input
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
                 placeholder="Send an update or ask a question"
-                className="flex-1 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm focus:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                className="flex-1 rounded-full border border-[var(--nh-border)] bg-[var(--nh-surface-muted)] px-4 py-2 text-sm text-[var(--nh-text-primary)] placeholder:text-[var(--nh-text-secondary)] focus:border-[var(--nh-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--nh-accent-soft)]"
               />
-              <button type="submit" className="btn btn-primary gap-2 px-4">
+              <button
+                type="submit"
+                className="btn btn-primary gap-2 px-4"
+                disabled={sending}
+                aria-busy={sending}
+              >
                 <Send className="h-4 w-4" />
                 Send
               </button>
             </form>
           </>
         ) : (
-          <div className="flex flex-1 items-center justify-center text-sm text-slate-500">
+          <div className="flex flex-1 items-center justify-center text-sm text-[var(--nh-text-secondary)]">
             Select a match to open the conversation.
           </div>
         )}

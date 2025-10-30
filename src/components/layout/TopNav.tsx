@@ -17,7 +17,7 @@ export default function TopNav() {
     return `${contract.hospital} • ${contract.shiftType.toUpperCase()} • ${startLabel}`;
   }, [contract]);
 
-  const assignmentCity = contract?.city ?? contract?.hospital ?? "Anywhere";
+  const assignmentCity = contract?.hospital ?? "Anywhere";
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--nh-border)] bg-white/85 backdrop-blur-md">
@@ -145,4 +145,3 @@ function RightControls({
     </div>
   );
 }
-

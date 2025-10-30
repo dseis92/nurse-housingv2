@@ -144,10 +144,10 @@ export default function OnboardingPage() {
 
   const finish = async () => {
     if (!nurseProfile) return;
-    completeOnboarding({ nurseProfileId: nurseProfile.id, answers: state });
+    completeOnboarding({ nurseProfileId: nurseProfile.id, answers: state as unknown as Record<string, unknown> });
 
     try {
-      await saveNurseOnboarding(state as any);
+      await saveNurseOnboarding(state as unknown as Record<string, unknown>);
     } catch (error) {
       console.warn("saveNurseOnboarding failed", error);
     }
